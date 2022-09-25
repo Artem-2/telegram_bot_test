@@ -8,3 +8,4 @@ primer.txt
 /__pycache__
 /env
 /.vs
+/tgbot/__pycache__
