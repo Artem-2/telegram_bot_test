@@ -1,8 +1,7 @@
 import codecs
-from mailbox import Message
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
-
+from aiogram.types import InlineKeyboardMarkup
 from tgbot.middlewares.DBhelp import BotDB
 from tgbot.misc.states import test_read
 from tgbot.handlers.interface_all import interface_all_begin
@@ -16,13 +15,11 @@ import string
 length = 10     #длинна кодового слова для теста
 
 async def test_create(call: types.CallbackQuery):
-    await call.message.answer("Отправьте файл формата .txt с тестом.\nДля отмены создания теста введите любое сообщение.")
+    button =  InlineKeyboardMarkup()
+    button_h = types.InlineKeyboardButton(text="Отмена", callback_data="start")
+    button.add(button_h)
+    await call.message.answer("Отправьте файл формата .txt с тестом.",reply_markup = button)
     await test_read.Q1.set()
-
-
-async def test_create2(message: types.Message, state: FSMContext):
-    await message.answer("Создание теста отменено для того чтобы повторить попытку введите /test_create")
-    await state.finish()
 
 
 async def test_create3(message: types.Message, state: FSMContext):
@@ -174,4 +171,3 @@ def register_test_create(dp: Dispatcher):
     dp.register_callback_query_handler(test_create, lambda c: c.data == "test_create", state=None)
     dp.register_callback_query_handler(test_create_help,  lambda c: c.data == "test_create_help", state=None)
     dp.register_message_handler(test_create3,content_types = ['document'], state=test_read.Q1)
-    dp.register_message_handler(test_create2,content_types = ['text'], state=test_read.Q1)
