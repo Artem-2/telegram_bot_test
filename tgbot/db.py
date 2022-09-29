@@ -195,6 +195,12 @@ class BotDB:
         self.conn.commit()
         return self.cursor.lastrowid
 
+    def answer_question_result_update(self, id, fk_id, result_question, id_question, id_answer):
+        #добавление ответа к вопросу
+        self.cursor.execute("UPDATE question_result SET fk_id = ?, result_question = ?, id_question = ?, id_answer = ? WHERE id=?",(fk_id, result_question, id_question, id_answer, id))
+        self.conn.commit()
+        return self.cursor.lastrowid
+
     def answer_question_result2(self, fk_id, result_question, id_question):
         #добавление ответа к вопросу
         self.cursor.execute("INSERT INTO 'question_result' ('fk_id','result_question','id_question') VALUES (?, ?, ?)",(fk_id,result_question,id_question))
@@ -207,9 +213,21 @@ class BotDB:
         self.conn.commit()
         return self.cursor.lastrowid
 
+    def answer_question_result_multiple_answers_update(self, id, fk_id, result_question, id_question, text_response):
+        #добавление ответа к вопросу
+        self.cursor.execute("UPDATE question_result SET fk_id = ?, result_question = ?, id_question = ?, text_response = ? WHERE id=?",(fk_id, result_question, id_question, text_response, id))
+        self.conn.commit()
+        return self.cursor.lastrowid
+
     def answer_question_result_text_response(self, fk_id, id_question, text_response):
         #добавление ответа к вопросу
         self.cursor.execute("INSERT INTO 'question_result' ('fk_id','id_question','text_response') VALUES (?, ?, ?)",(fk_id,id_question,text_response))
+        self.conn.commit()
+        return self.cursor.lastrowid
+
+    def answer_question_result_text_response_update(self, id, text_response):
+        #добавление ответа к вопросу
+        self.cursor.execute("UPDATE question_result SET text_response = ? WHERE id=?",(text_response, id))
         self.conn.commit()
         return self.cursor.lastrowid
 ###########################################################################
