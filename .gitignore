@@ -1,10 +1,6 @@
 .env
-/pictures
+/pictures/*.png
 /DB/tests.db
 help.txt
-/.idea
-/.vscode
-/__pycache__
 /env
 /.vs
-/tgbot/__pycache__
