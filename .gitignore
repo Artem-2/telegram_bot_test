@@ -1,8 +1,7 @@
 .env
 /pictures
-/DB
+/DB/tests.db
 help.txt
-primer.txt
 /.idea
 /.vscode
 /__pycache__
