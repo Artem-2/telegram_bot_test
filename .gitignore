@@ -2,5 +2,3 @@
 /pictures/*.png
 /DB/tests.db
 help.txt
-/env
-/.vs
