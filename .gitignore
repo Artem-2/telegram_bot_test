@@ -1,4 +1,5 @@
 .env
+*/__pycache__
 /pictures/*.png
 /DB/tests.db
 help.txt

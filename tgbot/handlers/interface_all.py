@@ -96,6 +96,6 @@ async def interface_all_test_create(call: types.CallbackQuery, state: FSMContext
 def register_interface_all(dp: Dispatcher):
     dp.register_callback_query_handler(interface_all_begin2,lambda c: c.data == "start", state="*")
     dp.register_message_handler(interface_all_begin,content_types = ['text'], state=None)
-    dp.register_message_handler(interface_all_begin3,commands=["start"], state=None)
+    dp.register_message_handler(interface_all_begin3,commands=["start"], state="*")
     dp.register_callback_query_handler(interface_all_passing_the_test,lambda c: c.data == "test", state=interface_all_state.Begin)
     dp.register_callback_query_handler(interface_all_test_create,lambda c: c.data == "create", state=interface_all_state.Begin)
