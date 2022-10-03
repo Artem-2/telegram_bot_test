@@ -8,7 +8,7 @@ from aiogram.utils.exceptions import (MessageCantBeDeleted, MessageToDeleteNotFo
 from aiogram.types import InlineKeyboardMarkup
 from tgbot.middlewares.DBhelp import BotDB
 from tgbot.misc.states import test_status
-from tgbot.handlers.interface_all import interface_all_begin
+from tgbot.handlers.interface_all import interface_all_begin, interface_all_begin4
 import random
 
 
@@ -75,11 +75,11 @@ async def update_message_multiple_answers(call: types.CallbackQuery, state: FSMC
             else:
                 button_h = types.InlineKeyboardButton(chr(ord('a') + j), callback_data = str(j))
                 button.add(button_h)
-        if len(msg)-1 == i:
+        if len(msg) == i:
             button_h_1 = types.InlineKeyboardButton("Назад", callback_data = "prev")
             button_h_2 = types.InlineKeyboardButton("Закончить тест", callback_data = "next")
             button.row(button_h_1, button_h_2)
-        elif len(msg)-1 != i:
+        elif len(msg) != i:
             flag = 0
             for ji in range(i-1):
                 if (len(msg[ji]) == 8) or (len(msg[ji]) == 9):
@@ -197,7 +197,7 @@ async def passing_the_test1(message: types.Message, state: FSMContext):
                 async with state.proxy() as data:
                     data["test_code"] = message.text
                     button =  InlineKeyboardMarkup()
-                    button_h = types.InlineKeyboardButton(text="начать тестирование", callback_data="start_test")
+                    button_h = types.InlineKeyboardButton(text="Начать тестирование", callback_data="start_test")
                     button.add(button_h)
                     button_h = types.InlineKeyboardButton(text="Назад", callback_data="start")
                     button.add(button_h)
@@ -370,7 +370,7 @@ async def passing_the_test3(message: types.Message, state: FSMContext):
         await message.answer("Оценка: "+str(mark1))
         BotDB.test_result_add_result(str(sum)+"/"+str(cost), id1, mark1)
         await state.finish()
-        await interface_all_begin(message, state)
+        await interface_all_begin4(message, state)
     else:
         if (len(msg[i]) == 8) or (len(msg[i]) == 9):
             button = msg[i][1]
@@ -658,6 +658,38 @@ async def callbacks_prev(call: types.CallbackQuery, state: FSMContext):
             data['i'] = ji
     await passing_the_test3(call.message, state)
 ###################################################################################################################################
+async def callbacks_prev_text_response(call: types.CallbackQuery, state: FSMContext):
+    async with state.proxy() as data:
+        user = data['user']
+        test = data['test']
+        msg = data['msg']
+        msg1 = data['msg1']
+        i = data['i']
+    id2 = BotDB.get_test_result(user,test)
+    id1 = id2[len(id2)-1][0]
+    if len(msg[i-1]) == 4:
+        id = BotDB.answer_question_result_text_response(id1,msg[i-1][1],"None")
+        await delete_message(state, msg1, 0, 0, id_ovet = id)
+    elif len(msg[i-1]) == 5:
+        await delete_message(state, msg1, 0, 0)
+    #удаление сообщения в случае ответа
+    if (len(msg[i-1]) == 8) or (len(msg[i-1]) == 4):
+        await delete_message(state, msg1, 0, 0, id_ovet = id)
+    elif (len(msg[i-1]) == 9) or (len(msg[i-1]) == 5):
+        await delete_message(state, msg1, 0, 0)
+    ji = -1
+    for j in range(i-1):
+        if (len(msg[j]) == 8) or (len(msg[j]) == 9):
+            if msg[j][7] != 0:
+                ji = j
+        elif (len(msg[j]) == 4) or (len(msg[j]) == 5):
+            if msg[j][3] != 0:
+                ji = j
+    if ji != -1:
+        async with state.proxy() as data:
+            data['i'] = ji
+    await passing_the_test3(call.message, state)
+###################################################################################################################################
 async def text_response(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         user = data['user']
@@ -689,8 +721,9 @@ def register_passing_the_test(dp: Dispatcher):
     dp.register_callback_query_handler(passing_the_test, lambda c: c.data == "passing_the_test")
     dp.register_message_handler(passing_the_test1, content_types = ['text'], state=test_status.Q1)
     dp.register_callback_query_handler(passing_the_test2,lambda c: c.data == "start_test", state=test_status.Q2)
+    dp.register_message_handler(text_response,content_types = ['text'], state=test_status.Q4)
     dp.register_callback_query_handler(callbacks_next, lambda c: c.data == "next", state=test_status.Q3)
     dp.register_callback_query_handler(callbacks_prev, lambda c: c.data == "prev", state=test_status.Q3)
     dp.register_callback_query_handler(callbacks_next_text_response, lambda c: c.data == "next", state=test_status.Q4)
+    dp.register_callback_query_handler(callbacks_prev_text_response, lambda c: c.data == "prev", state=test_status.Q4)
     dp.register_callback_query_handler(callbacks, state=test_status.Q3)
-    dp.register_message_handler(text_response,content_types = ['text'], state=test_status.Q4)

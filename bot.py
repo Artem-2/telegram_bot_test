@@ -1,3 +1,4 @@
+from ast import Lambda
 import asyncio
 import logging
 
@@ -8,6 +9,7 @@ from aiogram.contrib.fsm_storage.redis import RedisStorage2
 
 
 from tgbot.config import load_config
+from tgbot.config import Config
 from tgbot.filters.admin import AdminFilter
 #from tgbot.handlers.admin import register_admin
 #from tgbot.handlers.help import register_help
@@ -47,16 +49,16 @@ def register_all_handlers(dp):
     #register_help(dp)
     #register_echo(dp)
     register_registration_teachers(dp)
-    register_interface_all(dp)
     register_user_rename(dp)
-    register_activete(dp)
     register_pictures(dp)
-    register_pictures_del(dp)
-    register_test_del(dp)
     register_test_create(dp)
     register_Registration(dp)
+    register_interface_all(dp)
     register_get_test_result(dp)
     register_passing_the_test(dp)
+    register_test_del(dp)
+    register_activete(dp)
+    register_pictures_del(dp)
 
 
 async def main():
@@ -76,10 +78,16 @@ async def main():
     register_all_filters(dp)
     register_all_handlers(dp)
 
+    config2: Config = bot.get('config')
+
+    for c in config2.tg_bot.admin_ids:
+        await bot.send_message(c,'Бот запущен')
     # Start
     try:
         await dp.start_polling()
     finally:
+        for c in config2.tg_bot.admin_ids:
+            await bot.send_message(c,'Бот отключен')
         await dp.storage.close()
         await dp.storage.wait_closed()
         await bot.session.close()

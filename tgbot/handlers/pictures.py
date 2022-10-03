@@ -3,7 +3,7 @@ from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from aiogram.types import InlineKeyboardMarkup
 from tgbot.middlewares.DBhelp import BotDB
-from tgbot.misc.states import test_pictures
+from tgbot.misc.states import all
 from tgbot.handlers.interface_all import interface_all_begin
 import random
 import string
@@ -17,7 +17,7 @@ async def pictures(call: types.CallbackQuery):
     button_h = types.InlineKeyboardButton(text="Отмена", callback_data="start")
     button.add(button_h)
     await call.message.answer("Отправьте фотографию которую необходимо добавить в тест",reply_markup = button)
-    await test_pictures.Q1.set()
+    await all.test_picturesQ1.set()
 
 
 async def pictures3(message: types.Message, state: FSMContext):
@@ -39,4 +39,4 @@ async def pictures3(message: types.Message, state: FSMContext):
 
 def register_pictures(dp: Dispatcher):
     dp.register_callback_query_handler(pictures, lambda c: c.data == "pictures", state=None)
-    dp.register_message_handler(pictures3,content_types = ['photo'], state=test_pictures.Q1)
+    dp.register_message_handler(pictures3,content_types = ['photo'], state=all.test_picturesQ1)

@@ -2,7 +2,7 @@ from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from aiogram.types import InlineKeyboardMarkup
 from tgbot.middlewares.DBhelp import BotDB
-from tgbot.misc.states import test_del_state
+from tgbot.misc.states import all
 from tgbot.handlers.interface_all import interface_all_begin2
     
 
@@ -13,15 +13,15 @@ from tgbot.handlers.interface_all import interface_all_begin2
 async def test_del1(call: types.CallbackQuery):
     Title_Test_code = BotDB.get_test_title_test_code_no_active_mode(call.from_user.id)
     button =  InlineKeyboardMarkup()
-    all = "Тесты которыe вы можете удалить:\n"
+    all1 = "Тесты которыe вы можете удалить:\n"
     for a in Title_Test_code:
-        all = all + "\n" + "Код теста: " + a[1] + "\n" + "Название теста: " + a[0]
+        all1 = all1 + "\n" + "Код теста: " + a[1] + "\n" + "Название теста: " + a[0]
         button_h = types.InlineKeyboardButton((a[1]), callback_data = a[1])
         button.add(button_h)
     button_h = types.InlineKeyboardButton(("Отмена"), callback_data = "start")
     button.add(button_h)
-    await call.message.answer(all, reply_markup = button)
-    await test_del_state.Q1.set()
+    await call.message.answer(all1, reply_markup = button)
+    await all.test_del_stateQ1.set()
 
 
 
@@ -35,7 +35,7 @@ async def test_del2(call: types.CallbackQuery, state: FSMContext):
     button_h = types.InlineKeyboardButton(("Отмена"), callback_data = "start")
     button.add(button_h)
     await call.message.answer("Код теста который будет удален:" + str(call.data), reply_markup = button)
-    await test_del_state.Q2.set()
+    await all.test_del_stateQ2.set()
 
 
 async def test_del3(call: types.CallbackQuery, state: FSMContext):
@@ -51,5 +51,5 @@ async def test_del3(call: types.CallbackQuery, state: FSMContext):
 
 def register_test_del(dp: Dispatcher):
     dp.register_callback_query_handler(test_del1,lambda c: c.data == "test_del", state=None)
-    dp.register_callback_query_handler(test_del2, state=test_del_state.Q1)
-    dp.register_callback_query_handler(test_del3, lambda c: c.data == "test_del_activate", state=test_del_state.Q2)
+    dp.register_callback_query_handler(test_del2, state=all.test_del_stateQ1)
+    dp.register_callback_query_handler(test_del3, lambda c: c.data == "test_del_activate", state=all.test_del_stateQ2)

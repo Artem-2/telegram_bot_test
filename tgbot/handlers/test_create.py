@@ -3,7 +3,7 @@ from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from aiogram.types import InlineKeyboardMarkup
 from tgbot.middlewares.DBhelp import BotDB
-from tgbot.misc.states import test_read
+from tgbot.misc.states import all
 from tgbot.handlers.interface_all import interface_all_begin
 from tgbot.handlers.interface_all import interface_all_begin2
 
@@ -19,7 +19,7 @@ async def test_create(call: types.CallbackQuery):
     button_h = types.InlineKeyboardButton(text="Отмена", callback_data="start")
     button.add(button_h)
     await call.message.answer("Отправьте файл формата .txt с тестом.",reply_markup = button)
-    await test_read.Q1.set()
+    await all.test_readQ1.set()
 
 
 async def test_create3(message: types.Message, state: FSMContext):
@@ -161,13 +161,10 @@ async def test_create3(message: types.Message, state: FSMContext):
         await interface_all_begin(message,state)
 
 async def test_create_help(call: types.CallbackQuery, state: FSMContext):
-    await call.message.answer("для создания теста необходимо создать текстовый файл в формате .txt \nв начале файла укажите время которое будет дано для ответа на вопрос пример: \\t30(на каждый вопрос будет дано 30с)")
-    await call.message.answer("перед каждым из вопросов \\q\n дальше варианты ответа на вопрос перед каждым из вариантов +(правльный вариант ответа) либо -(неправильный вариант ответа)\nпример:")
-    await call.message.answer("\qздесь необходимо ввести вопрос\n-неправильный вариант ответа\n+правильный вариант ответа\n-неправильный вариант ответа\n-неправильный вариант ответа")
-    await call.message.answer("все строчки у которых не будет указано \\t,\\q,-,+ считаются коментариями\nесли у вопроса несколько вариантов ответа отмечены + то каждый из ответов будет считаться правильным")
+    await call.message.answer("В разработке")
     await interface_all_begin2(call,state)
 
 def register_test_create(dp: Dispatcher):
     dp.register_callback_query_handler(test_create, lambda c: c.data == "test_create", state=None)
     dp.register_callback_query_handler(test_create_help,  lambda c: c.data == "test_create_help", state=None)
-    dp.register_message_handler(test_create3,content_types = ['document'], state=test_read.Q1)
+    dp.register_message_handler(test_create3,content_types = ['document'], state=all.test_readQ1)

@@ -1,7 +1,7 @@
 from aiogram import types, Dispatcher
 from aiogram.dispatcher import FSMContext
 from tgbot.middlewares.DBhelp import BotDB
-from tgbot.misc.states import registration_teachers_status
+from tgbot.misc.states import all
 from tgbot.handlers.interface_all import interface_all_begin2, interface_all_begin
 from aiogram.types import InlineKeyboardMarkup
 import datetime
@@ -21,7 +21,7 @@ async def registration_teachers(call: types.CallbackQuery, state: FSMContext):
         result = BotDB.get_teachers_password(password)
     time = datetime.datetime.now()
     BotDB.teachers_password_add(password, time, call.from_user.id)
-    await call.message.answer("Пароль" + password + "\nДействителен 1 день с этого момента")
+    await call.message.answer("Пароль: " + password + "\nДействителен 1 день с этого момента")
     await call.message.answer("Для регистрации необходимо ввести /registration")
     await interface_all_begin2(call, state)
     
@@ -34,7 +34,7 @@ async def registration_teachers2(message: types.Message, state: FSMContext):
         await state.finish()    
     else:
         await message.answer("Введите пароль")
-        await registration_teachers_status.Q1.set()
+        await all.registration_teachers_statusQ1.set()
 
 async def registration_teachers3(message: types.Message, state: FSMContext):
     a = BotDB.get_teachers_password(message.text)
@@ -50,7 +50,7 @@ async def registration_teachers3(message: types.Message, state: FSMContext):
             await message.answer("Пароль верный\nДля регистрации введите ФИО")
             async with state.proxy() as data:
                 data['id'] = a[0]
-            await registration_teachers_status.Q2.set()
+            await all.registration_teachers_statusQ2.set()
         else:
             await message.answer("Неверный пароль")
             user_id = BotDB.get_teachers_user_id(a[0])
@@ -70,5 +70,5 @@ async def registration_teachers4(message: types.Message, state: FSMContext):
 def register_registration_teachers(dp: Dispatcher):
     dp.register_callback_query_handler(registration_teachers, lambda c: c.data == "registration_teachers", state="*")
     dp.register_message_handler(registration_teachers2, commands=["registration"], state="*")
-    dp.register_message_handler(registration_teachers3, content_types = ['text'], state=registration_teachers_status.Q1)
-    dp.register_message_handler(registration_teachers4, content_types = ['text'], state=registration_teachers_status.Q2)
+    dp.register_message_handler(registration_teachers3, content_types = ['text'], state=all.registration_teachers_statusQ1)
+    dp.register_message_handler(registration_teachers4, content_types = ['text'], state=all.registration_teachers_statusQ2)

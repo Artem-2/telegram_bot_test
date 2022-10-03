@@ -4,7 +4,7 @@ import os
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from tgbot.middlewares.DBhelp import BotDB
-from tgbot.misc.states import get_test
+from tgbot.misc.states import all
 from aiogram.types import InlineKeyboardMarkup
 from tgbot.handlers.interface_all import interface_all_begin2
     
@@ -16,15 +16,15 @@ from tgbot.handlers.interface_all import interface_all_begin2
 async def get_test_result(call: types.CallbackQuery):
     Title_Test_code = BotDB.get_test_title_test_code_no_active_mode(call.from_user.id)
     button =  InlineKeyboardMarkup()
-    all = "Тесты данные о которых вы можете получить\n"
+    all1 = "Тесты данные о которых вы можете получить\n"
     for a in Title_Test_code:
-        all = all + "\n" + "Код теста: " + a[1] + "\n" + "Название теста: " + a[0]
+        all1 = all1 + "\n" + "Код теста: " + a[1] + "\n" + "Название теста: " + a[0]
         button_h = types.InlineKeyboardButton((a[1]), callback_data = a[1])
         button.add(button_h)
     button_h = types.InlineKeyboardButton(("Отмена"), callback_data = "start")
     button.add(button_h)
-    await call.message.answer(all, reply_markup = button)
-    await get_test.Q1.set()
+    await call.message.answer(all1, reply_markup = button)
+    await all.get_testQ1.set()
 
 
 async def get_test_result2(call: types.CallbackQuery, state: FSMContext):
@@ -95,5 +95,5 @@ async def get_test_result2(call: types.CallbackQuery, state: FSMContext):
 
 
 def register_get_test_result(dp: Dispatcher):
-    dp.register_callback_query_handler(get_test_result, lambda c: c.data == "get_test_result", state=None)
-    dp.register_callback_query_handler(get_test_result2, state=get_test.Q1)
+    dp.register_callback_query_handler(get_test_result, lambda c: c.data == "get_test_result", state="*")
+    dp.register_callback_query_handler(get_test_result2, state=all.get_testQ1)
