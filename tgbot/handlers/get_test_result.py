@@ -16,7 +16,7 @@ from tgbot.handlers.interface_all import interface_all_begin2
 async def get_test_result(call: types.CallbackQuery):
     Title_Test_code = BotDB.get_test_title_test_code_no_active_mode(call.from_user.id)
     button =  InlineKeyboardMarkup()
-    all1 = "Тесты данные о которых вы можете получить\n"
+    all1 = "Тесты, данные о которых вы можете получить\n"
     for a in Title_Test_code:
         all1 = all1 + "\n" + "Код теста: " + a[1] + "\n" + "Название теста: " + a[0]
         button_h = types.InlineKeyboardButton((a[1]), callback_data = a[1])
