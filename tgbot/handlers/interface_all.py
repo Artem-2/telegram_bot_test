@@ -55,7 +55,6 @@ async def interface_all_begin2(call: types.CallbackQuery, state: FSMContext):
             button_h = types.InlineKeyboardButton(text="Регистрация", callback_data="registration")
             button.add(button_h)
     await call.message.answer("Выберите вариант",reply_markup = button)
-    await all.interface_all_stateBegin.set()
 
 
 
@@ -87,7 +86,6 @@ async def interface_all_begin4(call: types.CallbackQuery, state: FSMContext):
             button_h = types.InlineKeyboardButton(text="Регистрация", callback_data="registration")
             button.add(button_h)
     await call.answer("Выберите вариант",reply_markup = button)
-    await all.interface_all_stateBegin.set()
 
 
     
