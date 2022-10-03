@@ -32,6 +32,8 @@ class all(StatesGroup):
 #активация и деактивация теста
     test_activateQ1 = State()
     test_activateQ2 = State()
+#получение результатов не старше 1 дня
+    register_get_test_result_one_dayQ1 = State()
 
 
 

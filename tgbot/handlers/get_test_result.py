@@ -64,19 +64,20 @@ async def get_test_result2(call: types.CallbackQuery, state: FSMContext):
                             sheet1.write(i, j, answer[0])
                     else:
                         if ii[2] != None:
-                            if ii[2].startswith("multiple_answers:,"):
+                            text_pesponse = str(ii[2])
+                            if text_pesponse.startswith("multiple_answers:,"):
                                 result = ""
-                                text = ii[2]
+                                text = text_pesponse
                                 text = text.replace("multiple_answers:,","")
                                 text = text.split(",")
                                 for t in text:
                                     answer_in = BotDB.get_answer_test_answer(int(t))
                                     result = result + answer_in[0] + ","
                                 sheet1.write(i, j, result)
-                            elif ii[2].startswith("multiple_answers:"):
+                            elif text_pesponse.startswith("multiple_answers:"):
                                 sheet1.write(i, j, "Ответов нет")
                             else:
-                                sheet1.write(i, j, ii[2])
+                                sheet1.write(i, j, text_pesponse)
                         else:
                             sheet1.write(i, j, "Ответа нет")
                 j = j + 1

@@ -22,6 +22,7 @@ from tgbot.handlers.registration import register_Registration
 from tgbot.handlers.pictures import register_pictures
 from tgbot.handlers.pictures_del import register_pictures_del
 from tgbot.handlers.get_test_result import register_get_test_result
+from tgbot.handlers.get_test_result_one_day import register_get_test_result_one_day
 from tgbot.handlers.activete_deactivete import register_activete
 from tgbot.handlers.passing_the_test import register_passing_the_test
 from tgbot.handlers.interface_all import register_interface_all
@@ -55,6 +56,7 @@ def register_all_handlers(dp):
     register_Registration(dp)
     register_interface_all(dp)
     register_get_test_result(dp)
+    register_get_test_result_one_day(dp)
     register_passing_the_test(dp)
     register_test_del(dp)
     register_activete(dp)

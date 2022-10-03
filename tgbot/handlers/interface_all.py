@@ -125,6 +125,8 @@ async def interface_all_test_create(call: types.CallbackQuery, state: FSMContext
     button.add(button_h)
     button_h = types.InlineKeyboardButton(text="Результаты теста", callback_data="get_test_result")
     button.add(button_h)
+    button_h = types.InlineKeyboardButton(text="Результаты теста за 1 день", callback_data="get_test_result_one_day")
+    button.add(button_h)
     button_h = types.InlineKeyboardButton(text="Удалить тест", callback_data="test_del")
     button.add(button_h)
     button_h = types.InlineKeyboardButton(text="Назад", callback_data="start")

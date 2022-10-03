@@ -1,5 +1,6 @@
 .env
 */__pycache__
+*/*/__pycache__
 /pictures/*.png
 /DB/tests.db
 help.txt
