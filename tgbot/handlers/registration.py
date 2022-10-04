@@ -1,7 +1,7 @@
 from aiogram import types, Dispatcher
 from aiogram.dispatcher import FSMContext
 from tgbot.middlewares.DBhelp import BotDB
-from tgbot.misc.states import all
+from tgbot.misc.states import all,reg_us
 from tgbot.handlers.interface_all import interface_all_begin
 from aiogram.types import InlineKeyboardMarkup
 
@@ -9,11 +9,11 @@ from aiogram.types import InlineKeyboardMarkup
 
 
 async def Registration(call: types.CallbackQuery):
-    await call.message.answer("Введите имя, фамилию (пример: Иванов Иван)")
     button =  InlineKeyboardMarkup()
     button_h = types.InlineKeyboardButton(text="Отмена", callback_data="start")
     button.add(button_h)
-    await all.reg_usQ1.set()
+    await call.message.answer("Введите имя, фамилию (пример: Иванов Иван)", reply_markup = button)
+    await reg_us.Q1.set()
 
 
     
@@ -24,7 +24,7 @@ async def Registration2(message: types.Message, state: FSMContext):
         data["answer1"] = answer
         
     await message.answer("Введите группу (пример: 19-В-1)")
-    await all.reg_usQ2.set()
+    await reg_us.Q2.set()
 
 
 async def Registration3(message: types.Message, state: FSMContext):
@@ -47,5 +47,5 @@ async def Registration3(message: types.Message, state: FSMContext):
 
 def register_Registration(dp: Dispatcher):
     dp.register_callback_query_handler(Registration, lambda c: c.data == "registration", state=all.interface_all_stateQ1)
-    dp.register_message_handler(Registration2, content_types = ['text'], state=all.reg_usQ1)
-    dp.register_message_handler(Registration3, content_types = ['text'], state=all.reg_usQ2)
+    dp.register_message_handler(Registration2, content_types = ['text'], state=reg_us.Q1)
+    dp.register_message_handler(Registration3, content_types = ['text'], state=reg_us.Q2)
