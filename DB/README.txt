@@ -1,7 +1,7 @@
 CREATE TABLE pictures (
     id             INTEGER  PRIMARY KEY AUTOINCREMENT,
     pictures_code  STRING   UNIQUE,
-    date           DATETIME DEFAULT (DATETIME('now') ),
+    date           DATETIME DEFAULT (DATETIME('now', 'localtime') ),
     user_create_id INTEGER
 );
 
@@ -42,7 +42,7 @@ CREATE TABLE test (
     mark_5           INTEGER,
     active_mode      BOOLEAN  DEFAULT (0),
     date_create      DATETIME NOT NULL
-                              DEFAULT (DATETIME('now') ) 
+                              DEFAULT (DATETIME('now', 'localtime') ) 
 );
 
 CREATE TABLE test_answer (
@@ -76,7 +76,7 @@ CREATE TABLE test_result (
                                           ON UPDATE CASCADE,
     result  STRING,
     mark    INTEGER,
-    data    DATETIME DEFAULT (DATETIME('now') ) 
+    data    DATETIME DEFAULT (DATETIME('now', 'localtime') ) 
                      NOT NULL
 );
 
@@ -85,7 +85,7 @@ CREATE TABLE users (
     user_id           INTEGER  UNIQUE
                                NOT NULL,
     join_date         DATETIME NOT NULL
-                               DEFAULT ( (DATETIME('now') ) ),
+                               DEFAULT ( (DATETIME('now', 'localtime') ) ),
     user_name         STRING   NOT NULL,
     user_group        TEXT     NOT NULL,
     number_of_changes INTEGER  DEFAULT (0) 
