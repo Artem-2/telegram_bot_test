@@ -584,6 +584,22 @@ async def callbacks_next_text_response(call: types.CallbackQuery, state: FSMCont
         await delete_message(state, msg1, 0, 0, id_ovet = id)
     elif len(msg[i-1]) == 5:
         await delete_message(state, msg1, 0, 0)
+    #удаление сообщения в случае ответа
+    if (len(msg[i-1]) == 8) or (len(msg[i-1]) == 4):
+        await delete_message(state, msg1, 0, 0, id_ovet = id)
+    elif (len(msg[i-1]) == 9) or (len(msg[i-1]) == 5):
+        await delete_message(state, msg1, 0, 0)
+    ji = -1
+    for j in range(len(msg)):
+        if ((len(msg[j]) == 8) or (len(msg[j]) == 9)) and (i - 1 < j) and (ji == -1):
+            if msg[j][7] != 0:
+                ji = j
+        elif ((len(msg[j]) == 4) or (len(msg[j]) == 5)) and (i - 1 < j) and (ji == -1):
+            if msg[j][3] != 0:
+                ji = j
+    if ji != -1:
+        async with state.proxy() as data:
+            data['i'] = ji
     await passing_the_test3(call.message, state)
 ###################################################################################################################################
 async def callbacks_prev(call: types.CallbackQuery, state: FSMContext):

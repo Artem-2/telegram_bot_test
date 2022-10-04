@@ -40,7 +40,7 @@ async def get_test_result_one_day2(call: types.CallbackQuery, state: FSMContext)
             text = text + "Количество верных ответов/общее количество ответов: " + r[1] + "\n"
             text = text + "Оценка: " + str(r[2])
             await call.message.answer(text)
-    state.finish()
+    await state.finish()
     await interface_all_begin2(call, state)
 
     
