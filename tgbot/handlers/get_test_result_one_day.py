@@ -25,25 +25,33 @@ async def get_test_result_one_day(call: types.CallbackQuery):
     await all.register_get_test_result_one_dayQ1.set()
 
 async def get_test_result_one_day2(call: types.CallbackQuery, state: FSMContext):
-    test_id = BotDB.get_test_user_create_id(int(call.from_user.id), str(call.data))
-    res = BotDB.get_test_result_all(test_id[0][0])
-    data_2 = datetime.datetime.now()
-    for r in res:
-        data = datetime.datetime.strptime(r[3], '%Y-%m-%d %H:%M:%S')
-        data_3 = data_2 - data
-        if data_3.days < 1:
-            text = ""
-            user_id = r[0]
-            user_date = BotDB.get_user(user_id)
-            text = text + "Группа: " + user_date[1] + "\n"
-            text = text + "Фамилия Имя: " + user_date[0] + "\n"
-            text = text + "Количество верных ответов/общее количество ответов: " + r[1] + "\n"
-            text = text + "Оценка: " + str(r[2])
-            await call.message.answer(text)
-    await state.finish()
-    await interface_all_begin2(call, state)
+    flag = 0
+    Title_Test_code = BotDB.get_test_title_test_code_no_active_mode(call.from_user.id)
+    for a in Title_Test_code:
+        if a[1] == str(call.data):
+            flag = 1
+    if flag == 1:
+        test_id = BotDB.get_test_user_create_id(int(call.from_user.id), str(call.data))
+        res = BotDB.get_test_result_all(test_id[0][0])
+        data_2 = datetime.datetime.now()
+        for r in res:
+            data = datetime.datetime.strptime(r[3], '%Y-%m-%d %H:%M:%S')
+            data_3 = data_2 - data
+            if data_3.days < 1:
+                text = ""
+                user_id = r[0]
+                user_date = BotDB.get_user(user_id)
+                text = text + "Группа: " + user_date[1] + "\n"
+                text = text + "Фамилия Имя: " + user_date[0] + "\n"
+                text = text + "Количество верных ответов/общее количество ответов: " + r[1] + "\n"
+                text = text + "Оценка: " + str(r[2])
+                await call.message.answer(text)
+        await state.finish()
+        await interface_all_begin2(call, state)
+    else:
+        pass
 
     
 def register_get_test_result_one_day(dp: Dispatcher):
-    dp.register_callback_query_handler(get_test_result_one_day, lambda c: c.data == "get_test_result_one_day", state=None)
+    dp.register_callback_query_handler(get_test_result_one_day, lambda c: c.data == "get_test_result_one_day", state=all.interface_all_stateQ1)
     dp.register_callback_query_handler(get_test_result_one_day2, state=all.register_get_test_result_one_dayQ1)

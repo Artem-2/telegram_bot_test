@@ -7,7 +7,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.utils.exceptions import (MessageCantBeDeleted, MessageToDeleteNotFound, )
 from aiogram.types import InlineKeyboardMarkup
 from tgbot.middlewares.DBhelp import BotDB
-from tgbot.misc.states import test_status
+from tgbot.misc.states import test_status,all
 from tgbot.handlers.interface_all import interface_all_begin, interface_all_begin4
 import random
 
@@ -166,7 +166,10 @@ async def delete_message(state: FSMContext, message: types.Message, sleep_time: 
 ###################################################################################################################################
 #вспомогательная
 async def passing_the_test(call: types.CallbackQuery):
-    await call.message.answer("Введите код теста")
+    button =  InlineKeyboardMarkup()
+    button_h = types.InlineKeyboardButton(("Отмена"), callback_data = "start")
+    button.add(button_h)
+    await call.message.answer("Введите код теста", reply_markup = button)
     await test_status.Q1.set()
 
 
@@ -471,32 +474,38 @@ async def passing_the_test3(message: types.Message, state: FSMContext):
 ###################################################################################################################################
 #получает все CallbackQuery для ответа на тест
 async def callbacks(call: types.CallbackQuery, state: FSMContext):
-    call_data = call.data
-    async with state.proxy() as data:
-        msg = data['msg']
-        i = data['i']
-    if len(msg[i-1][2])==1:
-        async with state.proxy() as data:
-            data['call_data'] = call_data
-        await update_message(call, state, call_data)
-    else:
-        async with state.proxy() as data:
-            call_data_multiple_answers = data['call_data_multiple_answers']
+    flag = 1
+    try:
+        int(call.data)
+    except:
         flag = 0
-        c_helper = []
-        for c in call_data_multiple_answers:
-            if c == call_data:
-                flag = 1
-            else:
-                c_helper.append(c)
-        if flag == 0:
-            c_helper.append(call_data)
-        c_helper.sort()
-
-
+    if flag == 1:
+        call_data = call.data
         async with state.proxy() as data:
-            data['call_data_multiple_answers'] = c_helper
-        await update_message_multiple_answers(call, state, c_helper)
+            msg = data['msg']
+            i = data['i']
+        if len(msg[i-1][2])==1:
+            async with state.proxy() as data:
+                data['call_data'] = call_data
+            await update_message(call, state, call_data)
+        else:
+            async with state.proxy() as data:
+                call_data_multiple_answers = data['call_data_multiple_answers']
+            flag = 0
+            c_helper = []
+            for c in call_data_multiple_answers:
+                if c == call_data:
+                    flag = 1
+                else:
+                    c_helper.append(c)
+            if flag == 0:
+                c_helper.append(call_data)
+            c_helper.sort()
+            async with state.proxy() as data:
+                data['call_data_multiple_answers'] = c_helper
+            await update_message_multiple_answers(call, state, c_helper)
+    else:
+        pass
 ###################################################################################################################################
 async def callbacks_next(call: types.CallbackQuery, state: FSMContext):
     async with state.proxy() as data:
@@ -734,7 +743,7 @@ async def text_response(message: types.Message, state: FSMContext):
 
 
 def register_passing_the_test(dp: Dispatcher):
-    dp.register_callback_query_handler(passing_the_test, lambda c: c.data == "passing_the_test")
+    dp.register_callback_query_handler(passing_the_test, lambda c: c.data == "passing_the_test", state=all.interface_all_stateQ1)
     dp.register_message_handler(passing_the_test1, content_types = ['text'], state=test_status.Q1)
     dp.register_callback_query_handler(passing_the_test2,lambda c: c.data == "start_test", state=test_status.Q2)
     dp.register_message_handler(text_response,content_types = ['text'], state=test_status.Q4)

@@ -24,14 +24,22 @@ async def pictures_del(call: types.CallbackQuery):
 
 
 async def pictures_del2(call: types.CallbackQuery, state: FSMContext):
-    photo_adres = os.path.join(".","pictures",call.data+".png")
-    os.remove(photo_adres)
-    BotDB.pictures_del(call.data)
-    await call.message.answer("Картинка с кодом " + call.data + " удалена")
-    await state.finish()
-    await pictures_del(call)
+    flag = 0
+    Title_Test_code = BotDB.get_pictures_pictures_code(call.from_user.id)
+    for a in Title_Test_code:
+        if a[0] == str(call.data):
+            flag = 1
+    if flag == 1:
+        photo_adres = os.path.join(".","pictures",call.data+".png")
+        os.remove(photo_adres)
+        BotDB.pictures_del(call.data)
+        await call.message.answer("Картинка с кодом " + call.data + " удалена")
+        await state.finish()
+        await pictures_del(call)
+    else:
+        pass
 
 
 def register_pictures_del(dp: Dispatcher):
-    dp.register_callback_query_handler(pictures_del, lambda c: c.data == "pictures_del")
+    dp.register_callback_query_handler(pictures_del, lambda c: c.data == "pictures_del",state=all.interface_all_stateQ1)
     dp.register_callback_query_handler(pictures_del2, state=all.test_pictures_delQ1)

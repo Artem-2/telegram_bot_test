@@ -46,6 +46,6 @@ async def Registration3(message: types.Message, state: FSMContext):
 
 
 def register_Registration(dp: Dispatcher):
-    dp.register_callback_query_handler(Registration, lambda c: c.data == "registration")
+    dp.register_callback_query_handler(Registration, lambda c: c.data == "registration", state=all.interface_all_stateQ1)
     dp.register_message_handler(Registration2, content_types = ['text'], state=all.reg_usQ1)
     dp.register_message_handler(Registration3, content_types = ['text'], state=all.reg_usQ2)

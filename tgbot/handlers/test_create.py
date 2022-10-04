@@ -131,7 +131,7 @@ async def test_create3(message: types.Message, state: FSMContext):
                 if t.startswith("\\q"):
                     t1 = t.replace("\\q ","")
                     t1 = t1.replace("\\q","")
-                    test_question_id = int(BotDB.question_test_add(test_id, t1[:-1]))
+                    test_question_id = int(BotDB.question_test_add(test_id, t1.replace('\r', '')))
 
                 elif t.startswith("\\pictures"):
                     t1 = t.replace("\\pictures ","")
@@ -140,22 +140,22 @@ async def test_create3(message: types.Message, state: FSMContext):
                     if a !=None:
                         BotDB.question_test_add_pictures(t1[:-1],test_question_id)
                     else:
-                        await message.answer("Код картинки: " + t1[:-1] + " не существует")
+                        await message.answer("Код картинки: " + t1.replace('\r', '') + " не существует")
 
                 elif t.startswith("\\time"):
                     t1 = t.replace("\\time ","")
                     t1 = t1.replace("\\time","")
-                    BotDB.answer_test_add_time(test_question_id, t1[:-1])
+                    BotDB.answer_test_add_time(test_question_id, t1.replace('\r', ''))
 
                 elif t.startswith("\\-"):
                     t1 = t.replace("\\- ","")
                     t1 = t1.replace("\\-","")
-                    BotDB.answer_test_add(test_question_id, t1[:-1], 0)
+                    BotDB.answer_test_add(test_question_id, t1.replace('\r', ''), 0)
 
                 elif t.startswith("\\+"):
                     t1 = t.replace("\\+ ","")
                     t1 = t1.replace("\\+","")
-                    BotDB.answer_test_add(test_question_id, t1[:-1], 1)
+                    BotDB.answer_test_add(test_question_id, t1.replace('\r', ''), 1)
 
         await state.finish()
         await interface_all_begin(message,state)
@@ -165,6 +165,6 @@ async def test_create_help(call: types.CallbackQuery, state: FSMContext):
     await interface_all_begin2(call,state)
 
 def register_test_create(dp: Dispatcher):
-    dp.register_callback_query_handler(test_create, lambda c: c.data == "test_create", state=None)
-    dp.register_callback_query_handler(test_create_help,  lambda c: c.data == "test_create_help", state=None)
+    dp.register_callback_query_handler(test_create, lambda c: c.data == "test_create", state=all.interface_all_stateQ1)
+    dp.register_callback_query_handler(test_create_help,  lambda c: c.data == "test_create_help", state=all.interface_all_stateQ1)
     dp.register_message_handler(test_create3,content_types = ['document'], state=all.test_readQ1)

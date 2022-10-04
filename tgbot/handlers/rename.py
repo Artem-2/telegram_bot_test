@@ -19,7 +19,11 @@ async def rename0(call: types.CallbackQuery):
     await all.rename_stateQ1.set()
 
 async def rename1(call: types.CallbackQuery):
-    await call.message.answer("Введите имя, фамилию (пример: Иванов Иван)")
+    if call.data == "begin_rename":
+        await call.message.answer("Введите имя, фамилию (пример: Иванов Иван)")
+        await all.rename_stateQ2.set()
+    else:
+        pass
 
 
     
@@ -30,7 +34,7 @@ async def rename2(message: types.Message, state: FSMContext):
         data["answer1"] = answer
         
     await message.answer("Введите группу (пример: 19-В-1)")
-    await all.rename_stateQ2.set()
+    await all.rename_stateQ3.set()
 
 
 
@@ -57,7 +61,7 @@ async def rename3(message: types.Message, state: FSMContext):
 
 
 def register_user_rename(dp: Dispatcher):
-    dp.register_callback_query_handler(rename0, lambda c: c.data == "rename")
+    dp.register_callback_query_handler(rename0, lambda c: c.data == "rename", state = all.interface_all_stateQ1)
     dp.register_callback_query_handler(rename1, lambda c: c.data == "begin_rename", state=all.rename_stateQ1)
     dp.register_message_handler(rename2, content_types = ['text'], state=all.rename_stateQ2)
     dp.register_message_handler(rename3, content_types = ['text'], state=all.rename_stateQ3)

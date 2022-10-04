@@ -1,7 +1,7 @@
 from aiogram.dispatcher import FSMContext
 from aiogram import Dispatcher, types
 from aiogram.types import InlineKeyboardMarkup
-from tgbot.misc.states import all
+from tgbot.misc.states import all, test_status
 from tgbot.middlewares.DBhelp import BotDB
    
 number_of_changes_rename = 1  #количесто попыток изменения имени
@@ -29,6 +29,7 @@ async def interface_all_begin(message: types.Message, state: FSMContext):
         else:
             button_h = types.InlineKeyboardButton(text="Регистрация", callback_data="registration")
             button.add(button_h) 
+        await all.interface_all_stateQ1.set()
     await message.answer("Выберите вариант",reply_markup = button)
    
 
@@ -54,6 +55,7 @@ async def interface_all_begin2(call: types.CallbackQuery, state: FSMContext):
         else:
             button_h = types.InlineKeyboardButton(text="Регистрация", callback_data="registration")
             button.add(button_h)
+        await all.interface_all_stateQ1.set()
     await call.message.answer("Выберите вариант",reply_markup = button)
 
 
@@ -85,6 +87,7 @@ async def interface_all_begin4(call: types.CallbackQuery, state: FSMContext):
         else:
             button_h = types.InlineKeyboardButton(text="Регистрация", callback_data="registration")
             button.add(button_h)
+        await all.interface_all_stateQ1.set()
     await call.answer("Выберите вариант",reply_markup = button)
 
 
@@ -104,7 +107,7 @@ async def interface_all_passing_the_test(call: types.CallbackQuery, state: FSMCo
     button_h = types.InlineKeyboardButton(text="Назад", callback_data="start")
     button.add(button_h)
     await call.message.answer("Выберите вариант",reply_markup = button)
-    await state.finish()
+    await all.interface_all_stateQ1.set()
 
         
 
@@ -132,13 +135,13 @@ async def interface_all_test_create(call: types.CallbackQuery, state: FSMContext
     button_h = types.InlineKeyboardButton(text="Назад", callback_data="start")
     button.add(button_h)
     await call.message.answer("Выберите вариант",reply_markup = button)
-    await state.finish()
+    await all.interface_all_stateQ1.set()
 
 
 
 
 def register_interface_all(dp: Dispatcher):
-    all2 = all,None
+    all2 = all,None,test_status.Q1,test_status.Q2
     dp.register_callback_query_handler(interface_all_begin2,lambda c: c.data == "start", state=all2)
     dp.register_message_handler(interface_all_begin,content_types = ['text'], state=all2)
     dp.register_message_handler(interface_all_begin3,commands=["start"], state=all2)

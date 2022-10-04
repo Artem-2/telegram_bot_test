@@ -1,4 +1,3 @@
-from ast import Lambda
 import asyncio
 import logging
 
@@ -54,10 +53,10 @@ def register_all_handlers(dp):
     register_pictures(dp)
     register_test_create(dp)
     register_Registration(dp)
+    register_passing_the_test(dp)
     register_interface_all(dp)
     register_get_test_result(dp)
     register_get_test_result_one_day(dp)
-    register_passing_the_test(dp)
     register_test_del(dp)
     register_activete(dp)
     register_pictures_del(dp)

@@ -5,9 +5,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 class all(StatesGroup):
 #интерфейс
     interface_all_stateBegin = State()
-    interface_all_stateQ2 = State()
-    interface_all_stateQ3 = State()
-    interface_all_stateQ4 = State()
+    interface_all_stateQ1 = State()
 #регистрация преподавателя
     registration_teachers_statusQ1 = State()
     registration_teachers_statusQ2 = State()

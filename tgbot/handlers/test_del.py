@@ -26,30 +26,41 @@ async def test_del1(call: types.CallbackQuery):
 
 
 async def test_del2(call: types.CallbackQuery, state: FSMContext):
-    a = BotDB.get_test_user_create_id(int(call.from_user.id), str(call.data))
-    async with state.proxy() as data:
-        data["test_id_del"] = a[0][0]
-    button =  InlineKeyboardMarkup()
-    button_h = types.InlineKeyboardButton(("Продолжить"), callback_data = "test_del_activate")
-    button.add(button_h)
-    button_h = types.InlineKeyboardButton(("Отмена"), callback_data = "start")
-    button.add(button_h)
-    await call.message.answer("Код теста который будет удален:" + str(call.data), reply_markup = button)
-    await all.test_del_stateQ2.set()
+    flag = 0
+    Title_Test_code = BotDB.get_test_title_test_code_no_active_mode(call.from_user.id)
+    for a in Title_Test_code:
+        if a[1] == str(call.data):
+            flag = 1
+    if flag == 1:
+        a = BotDB.get_test_user_create_id(int(call.from_user.id), str(call.data))
+        async with state.proxy() as data:
+            data["test_id_del"] = a[0][0]
+        button =  InlineKeyboardMarkup()
+        button_h = types.InlineKeyboardButton(("Продолжить"), callback_data = "test_del_activate")
+        button.add(button_h)
+        button_h = types.InlineKeyboardButton(("Отмена"), callback_data = "start")
+        button.add(button_h)
+        await call.message.answer("Код теста который будет удален:" + str(call.data), reply_markup = button)
+        await all.test_del_stateQ2.set()
+    else:
+        pass
 
 
 async def test_del3(call: types.CallbackQuery, state: FSMContext):
-    async with state.proxy() as data:
-        a = data["test_id_del"]
-    BotDB.test_del(a)
-    await call.message.answer("Тест удален")
-    await state.finish()
-    await interface_all_begin2(call, state)
+    if call.data == "test_del_activate":
+        async with state.proxy() as data:
+            a = data["test_id_del"]
+        BotDB.test_del(a)
+        await call.message.answer("Тест удален")
+        await state.finish()
+        await interface_all_begin2(call, state)
+    else:
+        pass
 
 
 
 
 def register_test_del(dp: Dispatcher):
-    dp.register_callback_query_handler(test_del1,lambda c: c.data == "test_del", state=None)
+    dp.register_callback_query_handler(test_del1,lambda c: c.data == "test_del", state=all.interface_all_stateQ1)
     dp.register_callback_query_handler(test_del2, state=all.test_del_stateQ1)
     dp.register_callback_query_handler(test_del3, lambda c: c.data == "test_del_activate", state=all.test_del_stateQ2)

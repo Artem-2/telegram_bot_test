@@ -38,5 +38,5 @@ async def pictures3(message: types.Message, state: FSMContext):
 
 
 def register_pictures(dp: Dispatcher):
-    dp.register_callback_query_handler(pictures, lambda c: c.data == "pictures", state=None)
+    dp.register_callback_query_handler(pictures, lambda c: c.data == "pictures", state=all.interface_all_stateQ1)
     dp.register_message_handler(pictures3,content_types = ['photo'], state=all.test_picturesQ1)

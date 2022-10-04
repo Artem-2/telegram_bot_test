@@ -25,10 +25,18 @@ async def activete(call: types.CallbackQuery):
 
 
 async def activete2(call: types.CallbackQuery, state: FSMContext):
-    BotDB.test_update_active_mode(call.data, True)
-    await call.message.answer("Тест с кодом " + str(call.data) + " активирован")
-    await state.finish()
-    await interface_all_begin2(call, state)
+    flag = 0
+    Title_Test_code = BotDB.get_test_title_code_test(call.from_user.id, False)
+    for a in Title_Test_code:
+        if a[1] == str(call.data):
+            flag = 1
+    if flag == 1:
+        BotDB.test_update_active_mode(call.data, True)
+        await call.message.answer("Тест с кодом " + str(call.data) + " активирован")
+        await state.finish()
+        await interface_all_begin2(call, state)
+    else:
+        pass
     
 
 
@@ -47,14 +55,22 @@ async def deactivete(call: types.CallbackQuery):
 
 
 async def deactivete2(call: types.CallbackQuery, state: FSMContext):
-    BotDB.test_update_active_mode(call.data, False)
-    await call.message.answer("Тест с кодом " + str(call.data) + " отключен")
-    await state.finish()
-    await interface_all_begin2(call, state)
+    flag = 0
+    Title_Test_code = BotDB.get_test_title_code_test(call.from_user.id, True)
+    for a in Title_Test_code:
+        if a[1] == str(call.data):
+            flag = 1
+    if flag == 1:
+        BotDB.test_update_active_mode(call.data, False)
+        await call.message.answer("Тест с кодом " + str(call.data) + " отключен")
+        await state.finish()
+        await interface_all_begin2(call, state)
+    else:
+        pass
 
 
 def register_activete(dp: Dispatcher):
-    dp.register_callback_query_handler(activete, lambda c: c.data == "activete", state=None)
+    dp.register_callback_query_handler(activete, lambda c: c.data == "activete", state=all.interface_all_stateQ1)
     dp.register_callback_query_handler(activete2, state=all.test_activateQ1)
-    dp.register_callback_query_handler(deactivete, lambda c: c.data == "deactivete", state=None)
+    dp.register_callback_query_handler(deactivete, lambda c: c.data == "deactivete", state=all.interface_all_stateQ1)
     dp.register_callback_query_handler(deactivete2, state=all.test_activateQ2)

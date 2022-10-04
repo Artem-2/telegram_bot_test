@@ -1,7 +1,7 @@
 from aiogram import types, Dispatcher
 from aiogram.dispatcher import FSMContext
 from tgbot.middlewares.DBhelp import BotDB
-from tgbot.misc.states import all
+from tgbot.misc.states import all, test_status
 from tgbot.handlers.interface_all import interface_all_begin2, interface_all_begin
 from aiogram.types import InlineKeyboardMarkup
 import datetime
@@ -68,7 +68,8 @@ async def registration_teachers4(message: types.Message, state: FSMContext):
 
 
 def register_registration_teachers(dp: Dispatcher):
-    dp.register_callback_query_handler(registration_teachers, lambda c: c.data == "registration_teachers", state="*")
-    dp.register_message_handler(registration_teachers2, commands=["registration"], state="*")
+    all2 = all,None,test_status.Q1,test_status.Q2
+    dp.register_callback_query_handler(registration_teachers, lambda c: c.data == "registration_teachers", state=all.interface_all_stateBegin)
+    dp.register_message_handler(registration_teachers2, commands=["registration"], state=all2)
     dp.register_message_handler(registration_teachers3, content_types = ['text'], state=all.registration_teachers_statusQ1)
     dp.register_message_handler(registration_teachers4, content_types = ['text'], state=all.registration_teachers_statusQ2)
