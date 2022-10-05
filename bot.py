@@ -10,10 +10,6 @@ from aiogram.contrib.fsm_storage.redis import RedisStorage2
 from tgbot.config import load_config
 from tgbot.config import Config
 from tgbot.filters.admin import AdminFilter
-#from tgbot.handlers.admin import register_admin
-#from tgbot.handlers.help import register_help
-#from tgbot.handlers.start_user import register_user
-#from tgbot.handlers.echo import register_echo
 from tgbot.handlers.rename import register_user_rename
 from tgbot.handlers.test_create import register_test_create
 from tgbot.handlers.test_del import register_test_del
@@ -45,10 +41,6 @@ def register_all_filters(dp):
 
 
 def register_all_handlers(dp):
-    #register_admin(dp)
-    #register_user(dp)
-    #register_help(dp)
-    #register_echo(dp)
     register_registration_teachers(dp)
     register_user_rename(dp)
     register_pictures(dp)
