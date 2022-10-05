@@ -253,7 +253,7 @@ async def passing_the_test2(call: types.CallbackQuery, state: FSMContext):
                 button =  InlineKeyboardMarkup()
                 answer_get = []
                 for answer in random.sample(answers,len(answers)):
-                    all = all + "\n" + chr(ord('a') + i) + ")" + str(answer[0])
+                    all = all + "\n" + chr(ord('a') + i) + ") " + str(answer[0])
                     button_h = types.InlineKeyboardButton(chr(ord('a') + i), callback_data = str(i))
                     answer_get.append(answer[2])
                     if answer[1] == 1:
@@ -296,7 +296,7 @@ async def passing_the_test2(call: types.CallbackQuery, state: FSMContext):
                 button =  InlineKeyboardMarkup()
                 answer_get = []
                 for answer in random.sample(answers,len(answers)):
-                    all = all + "\n" + chr(ord('a') + i) + ")" + str(answer[0])
+                    all = all + "\n" + chr(ord('a') + i) + ") " + str(answer[0])
                     button_h = types.InlineKeyboardButton(chr(ord('a') + i), callback_data = str(i))
                     answer_get.append(answer[2])
                     if answer[1] == 1:
@@ -357,21 +357,37 @@ async def passing_the_test3(message: types.Message, state: FSMContext):
         sum = 0
         cost = 0
         mark1 = 0
-        for r in results:
-            if r[0] != None:
-                sum = sum + r[0]
-                cost = cost + 1
-        if int(mark[2]) <= sum:
-            mark1 = 5
-        elif int(mark[1]) <= sum:
-            mark1 = 4
-        elif int(mark[0]) <= sum:
-            mark1 = 3
+        if mark[1] == 0 and mark[0] == 0 and mark[2] == 0:
+            await message.answer("Тест пройден")
+            BotDB.test_result_add_result("None", id1, mark1)
+        elif mark[1] == 0 and mark[0] == 0 and mark[2] != 0:
+            for r in results:
+                if r[0] != None:
+                    sum = sum + r[0]
+                    cost = cost + 1
+            await message.answer(str(sum)+" правильных ответов из "+str(cost))
+            if int(mark[2]) <= sum:
+                await message.answer("Тест сдан")
+                BotDB.test_result_add_result("Тест сдан", id1, mark1)
+            else:
+                await message.answer("Тест не сдан")
+                BotDB.test_result_add_result("Тест не сдан", id1, mark1)
         else:
-            mark1 = 2
-        await message.answer(str(sum)+" правильных ответов из "+str(cost))
-        await message.answer("Оценка: "+str(mark1))
-        BotDB.test_result_add_result(str(sum)+"/"+str(cost), id1, mark1)
+            for r in results:
+                if r[0] != None:
+                    sum = sum + r[0]
+                    cost = cost + 1
+            if int(mark[2]) <= sum:
+                mark1 = 5
+            elif int(mark[1]) <= sum:
+                mark1 = 4
+            elif int(mark[0]) <= sum:
+                mark1 = 3
+            else:
+                mark1 = 2
+            await message.answer(str(sum)+" правильных ответов из "+str(cost))
+            await message.answer("Оценка: "+str(mark1))
+            BotDB.test_result_add_result(str(sum)+"/"+str(cost), id1, mark1)
         await state.finish()
         await interface_all_begin4(message, state)
     else:
