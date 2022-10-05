@@ -1,4 +1,5 @@
 import codecs
+import os
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from aiogram.types import InlineKeyboardMarkup
@@ -18,14 +19,14 @@ async def test_create(call: types.CallbackQuery):
     button =  InlineKeyboardMarkup()
     button_h = types.InlineKeyboardButton(text="Отмена", callback_data="start")
     button.add(button_h)
-    await call.message.answer("Отправьте файл формата .txt с тестом.",reply_markup = button)
+    await call.message.answer("Отправьте файл формата .txt с тесто\nКодировка файла UTF-8",reply_markup = button)
     await all.test_readQ1.set()
 
 
 async def test_create3(message: types.Message, state: FSMContext):
     #получение содержимого файла
     if message.document.mime_type == 'text/plain':
-        file_name = message.document.file_name
+        file_name = os.path.join(".", "Test_files", message.document.file_name)
         await message.document.download(destination_file=file_name)
         with codecs.open(file_name, encoding='utf-8') as file:
             text = file.read()
@@ -158,6 +159,8 @@ async def test_create3(message: types.Message, state: FSMContext):
                     BotDB.answer_test_add(test_question_id, t1.replace('\r', ''), 1)
 
         await state.finish()
+        file = os.path.join(".", "Test_files", message.document.file_name)
+        os.remove(file)
         await interface_all_begin(message,state)
 
 async def test_create_help(call: types.CallbackQuery, state: FSMContext):

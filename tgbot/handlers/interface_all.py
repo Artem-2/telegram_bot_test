@@ -3,6 +3,7 @@ from aiogram import Dispatcher, types
 from aiogram.types import InlineKeyboardMarkup
 from tgbot.misc.states import all, test_status, rename_state, reg_us
 from tgbot.middlewares.DBhelp import BotDB
+from tgbot.config import Config
    
 number_of_changes_rename = 1  #количесто попыток изменения имени
 
@@ -92,13 +93,24 @@ async def interface_all_test_create(call: types.CallbackQuery, state: FSMContext
     await call.message.answer("Выберите вариант",reply_markup = button)
     await all.interface_all_stateQ1.set()
 
+            
 
+
+async def interface_all_test_create_admin(message: types.Message):
+    button =  InlineKeyboardMarkup()
+    button_h = types.InlineKeyboardButton(text="Результаты теста (все)", callback_data="get_test_result_admin")
+    button.add(button_h)
+    button_h = types.InlineKeyboardButton(text="Отмена", callback_data="start")
+    button.add(button_h)
+    await message.answer("Выберите вариант",reply_markup = button)
+    await all.interface_all_stateQ1.set()
 
 
 def register_interface_all(dp: Dispatcher):
     all2 = all,None,test_status.Q1,test_status.Q2,rename_state.Q1,reg_us.Q1
-    dp.register_callback_query_handler(interface_all_begin2,lambda c: c.data == "start", state=all2)
-    dp.register_message_handler(interface_all_begin,content_types = ['text'], state=all2)
     dp.register_message_handler(interface_all_begin3,commands=["start"], state=all2)
+    dp.register_message_handler(interface_all_test_create_admin,commands=["admin"], state=all2, is_admin=True)
+    dp.register_message_handler(interface_all_begin,content_types = ['text'], state=all2)
+    dp.register_callback_query_handler(interface_all_begin2,lambda c: c.data == "start", state=all2)
     dp.register_callback_query_handler(interface_all_passing_the_test,lambda c: c.data == "test", state=all.interface_all_stateBegin)
     dp.register_callback_query_handler(interface_all_test_create,lambda c: c.data == "create", state=all.interface_all_stateBegin)

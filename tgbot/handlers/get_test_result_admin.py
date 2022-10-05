@@ -4,7 +4,7 @@ import os
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from tgbot.middlewares.DBhelp import BotDB
-from tgbot.misc.states import all
+from tgbot.misc.states import all, test_status, rename_state, reg_us
 from aiogram.types import InlineKeyboardMarkup
 from tgbot.handlers.interface_all import interface_all_begin2
     
@@ -13,27 +13,30 @@ from tgbot.handlers.interface_all import interface_all_begin2
 
 
 
-async def get_test_result(call: types.CallbackQuery):
-    Title_Test_code = BotDB.get_test_title_test_code_no_active_mode(call.from_user.id)
+async def get_test_result_admin(call: types.CallbackQuery):
+    Title_Test_code = BotDB.get_test_title_test_code_no_active_mode_admin()
     button =  InlineKeyboardMarkup()
     all1 = "Тесты, данные о которых вы можете получить\n"
     for a in Title_Test_code:
-        all1 = all1 + "\n" + "Код теста: " + a[1] + "\n" + "Название теста: " + a[0] + "\n"
+        user_name = BotDB.get_teachers_name(a[2])
+        all1 = all1 + "\nКод теста: " + a[1] + "\nНазвание теста: " + a[0] + "\nСоздатель: " + user_name[0] + "\n"
         button_h = types.InlineKeyboardButton((a[1]), callback_data = a[1])
         button.add(button_h)
     button_h = types.InlineKeyboardButton(("Отмена"), callback_data = "start")
     button.add(button_h)
     await call.message.answer(all1, reply_markup = button)
-    await all.get_testQ1.set()
+    await all.get_test_adminQ1.set()
 
 
-async def get_test_result2(call: types.CallbackQuery, state: FSMContext):
-    flag = 0
-    Title_Test_code = BotDB.get_test_title_test_code_no_active_mode(call.from_user.id)
+async def get_test_result_admin2(call: types.CallbackQuery, state: FSMContext):
+    flag = -1
+    Title_Test_code = BotDB.get_test_title_test_code_no_active_mode_admin()
+    i = 0
     for a in Title_Test_code:
         if a[1] == str(call.data):
-            flag = 1
-    if flag == 1:
+            flag = i
+        i = i + 1
+    if flag != -1:
         book = xlwt.Workbook(encoding="utf-8")
         sheet1 = book.add_sheet("Python Sheet 1") 
         sheet1.write(0, 0, "№")
@@ -42,7 +45,7 @@ async def get_test_result2(call: types.CallbackQuery, state: FSMContext):
         sheet1.write(0, 3, "Количество верных ответов/общее количество ответов")
         sheet1.write(0, 4, "Оценка")
         sheet1.write(0, 5, "Дата прохождения теста")
-        test_id = BotDB.get_test_user_create_id(int(call.from_user.id), str(call.data))
+        test_id = BotDB.get_test_user_create_id(Title_Test_code[flag][2], str(call.data))
         questions = BotDB.get_question_test(test_id[0][0])
         i = 6
         for question in questions:
@@ -103,6 +106,6 @@ async def get_test_result2(call: types.CallbackQuery, state: FSMContext):
 
 
 
-def register_get_test_result(dp: Dispatcher):
-    dp.register_callback_query_handler(get_test_result, lambda c: c.data == "get_test_result", state=all.interface_all_stateQ1)
-    dp.register_callback_query_handler(get_test_result2, state=all.get_testQ1)
+def register_get_test_result_admin(dp: Dispatcher):
+    dp.register_callback_query_handler(get_test_result_admin,lambda c: c.data == "get_test_result_admin", state=all.interface_all_stateQ1)
+    dp.register_callback_query_handler(get_test_result_admin2, state=all.get_test_adminQ1)

@@ -20,6 +20,7 @@ from tgbot.handlers.test_del import register_test_del
 from tgbot.handlers.registration import register_Registration
 from tgbot.handlers.pictures import register_pictures
 from tgbot.handlers.pictures_del import register_pictures_del
+from tgbot.handlers.get_test_result_admin import register_get_test_result_admin
 from tgbot.handlers.get_test_result import register_get_test_result
 from tgbot.handlers.get_test_result_one_day import register_get_test_result_one_day
 from tgbot.handlers.activete_deactivete import register_activete
@@ -55,6 +56,7 @@ def register_all_handlers(dp):
     register_Registration(dp)
     register_passing_the_test(dp)
     register_interface_all(dp)
+    register_get_test_result_admin(dp)
     register_get_test_result(dp)
     register_get_test_result_one_day(dp)
     register_test_del(dp)
@@ -80,15 +82,20 @@ async def main():
     register_all_handlers(dp)
 
     config2: Config = bot.get('config')
-
-    for c in config2.tg_bot.admin_ids:
-        await bot.send_message(c,'Бот запущен')
+    try:
+        for c in config2.tg_bot.admin_ids:
+            await bot.send_message(c,'Бот запущен')
+    except:
+        print("Неверный id админа\n")
     # Start
     try:
         await dp.start_polling()
     finally:
-        for c in config2.tg_bot.admin_ids:
-            await bot.send_message(c,'Бот отключен')
+        try:
+            for c in config2.tg_bot.admin_ids:
+                await bot.send_message(c,'Бот отключен')
+        except:
+            pass
         await dp.storage.close()
         await dp.storage.wait_closed()
         await bot.session.close()

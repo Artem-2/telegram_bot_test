@@ -22,6 +22,8 @@ class all(StatesGroup):
     test_activateQ2 = State()
 #получение результатов не старше 1 дня
     register_get_test_result_one_dayQ1 = State()
+#вывод результатов теста(для админа)
+    get_test_adminQ1 = State()
 
 
 

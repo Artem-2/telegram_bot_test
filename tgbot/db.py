@@ -64,6 +64,11 @@ class BotDB:
         result = self.cursor.execute("SELECT title,test_code FROM test WHERE user_create_id = ? ",(user_create_id,))
         return result.fetchall()
 
+    def get_test_title_test_code_no_active_mode_admin(self):
+        #получить название и код теста
+        result = self.cursor.execute("SELECT title,test_code,user_create_id FROM test",())
+        return result.fetchall()
+
     def get_test_title(self, id):
         #получить критерии оценок
         result = self.cursor.execute("SELECT title FROM test WHERE id = ?",(id,))

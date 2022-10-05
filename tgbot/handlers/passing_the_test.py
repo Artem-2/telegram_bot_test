@@ -359,7 +359,7 @@ async def passing_the_test3(message: types.Message, state: FSMContext):
         mark1 = 0
         if mark[1] == 0 and mark[0] == 0 and mark[2] == 0:
             await message.answer("Тест пройден")
-            BotDB.test_result_add_result("None", id1, mark1)
+            BotDB.test_result_add_result("Тест пройден", id1, "None")
         elif mark[1] == 0 and mark[0] == 0 and mark[2] != 0:
             for r in results:
                 if r[0] != None:
@@ -368,10 +368,10 @@ async def passing_the_test3(message: types.Message, state: FSMContext):
             await message.answer(str(sum)+" правильных ответов из "+str(cost))
             if int(mark[2]) <= sum:
                 await message.answer("Тест сдан")
-                BotDB.test_result_add_result("Тест сдан", id1, mark1)
+                BotDB.test_result_add_result(str(sum)+"/"+str(cost), id1, "Тест сдан")
             else:
                 await message.answer("Тест не сдан")
-                BotDB.test_result_add_result("Тест не сдан", id1, mark1)
+                BotDB.test_result_add_result(str(sum)+"/"+str(cost), id1, "Тест не сдан")
         else:
             for r in results:
                 if r[0] != None:
