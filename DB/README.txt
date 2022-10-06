@@ -75,7 +75,7 @@ CREATE TABLE test_result (
     test_id INTEGER  REFERENCES test (id) ON DELETE CASCADE
                                           ON UPDATE CASCADE,
     result  STRING,
-    mark    INTEGER,
+    mark    STRING,
     data    DATETIME DEFAULT (DATETIME('now', 'localtime') ) 
                      NOT NULL
 );
