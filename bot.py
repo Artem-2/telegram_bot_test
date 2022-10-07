@@ -5,10 +5,9 @@ from aiogram import Bot, Dispatcher
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.contrib.fsm_storage.redis import RedisStorage2
 
-
-
-from tgbot.config import load_config
-from tgbot.config import Config
+from tgbot.config import bot
+from tgbot.config import dp
+from tgbot.config import config2
 from tgbot.filters.admin import AdminFilter
 from tgbot.handlers.rename import register_user_rename
 from tgbot.handlers.test_create import register_test_create
@@ -62,18 +61,11 @@ async def main():
         format=u'%(filename)s:%(lineno)d #%(levelname)-8s [%(asctime)s] - %(name)s - %(message)s',
     )
     logger.info("Starting bot")
-    config = load_config(".env")
-
-    storage = RedisStorage2() if config.tg_bot.use_redis else MemoryStorage()
-    bot = Bot(token=config.tg_bot.token, parse_mode='HTML')
-    dp = Dispatcher(bot, storage=storage)
-    bot['config'] = config
 
     register_all_middlewares(dp)
     register_all_filters(dp)
     register_all_handlers(dp)
 
-    config2: Config = bot.get('config')
     try:
         for c in config2.tg_bot.admin_ids:
             await bot.send_message(c,'Бот запущен')
