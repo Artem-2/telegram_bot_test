@@ -31,14 +31,19 @@ async def get_test_result(call: types.CallbackQuery, state: FSMContext):
         await state.finish()
 
 
-async def get_test_result2(call: types.CallbackQuery, state: FSMContext):
+async def get_test_result2(call: types.CallbackQuery, state: FSMContext, admin: bool=False):
     try:
-        flag = 0
-        Title_Test_code = BotDB.get_test_title_test_code_no_active_mode(call.from_user.id)
+        flag = -1
+        if admin == False:
+            Title_Test_code = BotDB.get_test_title_test_code_no_active_mode(call.from_user.id)
+        else:
+            Title_Test_code = BotDB.get_test_title_test_code_no_active_mode_admin()
+        i = 0
         for a in Title_Test_code:
             if a[1] == str(call.data):
-                flag = 1
-        if flag == 1:
+                flag = i
+            i = i + 1
+        if flag != -1:
             book = xlwt.Workbook(encoding="utf-8")
             sheet1 = book.add_sheet("Python Sheet 1") 
             sheet1.write(0, 0, "№")
@@ -47,7 +52,10 @@ async def get_test_result2(call: types.CallbackQuery, state: FSMContext):
             sheet1.write(0, 3, "Количество верных ответов/общее количество ответов")
             sheet1.write(0, 4, "Оценка")
             sheet1.write(0, 5, "Дата прохождения теста")
-            test_id = BotDB.get_test_user_create_id(int(call.from_user.id), str(call.data))
+            if admin == False:
+                test_id = BotDB.get_test_user_create_id(str(call.from_user.id), str(call.data))
+            else:
+                test_id = BotDB.get_test_user_create_id(Title_Test_code[flag][2], str(call.data))
             questions = BotDB.get_question_test(test_id[0][0])
             i = 6
             for question in questions:
