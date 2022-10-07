@@ -83,7 +83,7 @@ async def registration_teachers4(message: types.Message, state: FSMContext):
 
 
 def register_registration_teachers(dp: Dispatcher):
-    all2 = all,None,test_status.Q1,test_status.Q2,rename_state.Q1,reg_us.Q1
+    all2 = all,None,test_status.Q1,test_status.Q2,rename_state.Q1,rename_state.Q2,reg_us.Q1
     dp.register_callback_query_handler(registration_teachers, lambda c: c.data == "registration_teachers", state=all.interface_all_stateBegin)
     dp.register_message_handler(registration_teachers2, commands=["registration"], state=all2)
     dp.register_message_handler(registration_teachers3, content_types = ['text'], state=registration_teachers_status.Q1)

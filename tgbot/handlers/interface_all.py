@@ -123,7 +123,7 @@ async def interface_all_test_create_admin(message: types.Message, state: FSMCont
 
 
 def register_interface_all(dp: Dispatcher):
-    all2 = all,None,test_status.Q1,test_status.Q2,rename_state.Q1,reg_us.Q1
+    all2 = all,None,test_status.Q1,test_status.Q2,rename_state.Q1,rename_state.Q2,reg_us.Q1
     dp.register_message_handler(interface_all_begin3,commands=["start"], state=all2)
     dp.register_message_handler(interface_all_test_create_admin,commands=["admin"], state=all2, is_admin=True)
     dp.register_message_handler(interface_all_begin,content_types = ['text'], state=all2)

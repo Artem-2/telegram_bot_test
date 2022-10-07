@@ -22,6 +22,7 @@ class all(StatesGroup):
     test_activateQ2 = State()
 #получение результатов не старше 1 дня
     register_get_test_result_one_dayQ1 = State()
+    register_get_test_result_one_dayQ2 = State()
 #вывод результатов теста(для админа)
     get_test_adminQ1 = State()
 
@@ -32,6 +33,7 @@ class rename_state(StatesGroup):
     Q1 = State()
     Q2 = State()
     Q3 = State()
+    Q4 = State()
     
 #регистрация преподавателя
 class registration_teachers_status(StatesGroup):
@@ -42,6 +44,7 @@ class registration_teachers_status(StatesGroup):
 class reg_us(StatesGroup):
     Q1 = State()
     Q2 = State()
+    Q3 = State()
 
 #для прохождения теста
 class test_status(StatesGroup):

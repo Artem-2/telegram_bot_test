@@ -257,6 +257,12 @@ class BotDB:
         self.conn.commit()
         return self.cursor.lastrowid
 ###########################################################################
+    def test_result_del(self, id):
+        #удалить результаты теста
+        self.cursor.execute("DELETE FROM test_result WHERE id = ?",(id,))
+        self.conn.commit()
+        return self.cursor.lastrowid
+
     def get_test_result_all(self, test_id):
         #получить id теста который проходит пользователь
         result = self.cursor.execute("SELECT user_id, result, mark, data, id FROM test_result WHERE test_id = ?",(test_id,))

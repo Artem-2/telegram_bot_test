@@ -1,6 +1,7 @@
 import os.path
 import datetime
 import asyncio
+from aiogram.utils.exceptions import MessageNotModified
 from contextlib import suppress
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
@@ -11,10 +12,83 @@ from tgbot.misc.states import test_status,all
 from tgbot.handlers.interface_all import interface_all_begin, interface_all_begin4
 import random
 #ошибки 6000
+time_update = 5 #частота обновления таймера
 
 
-
-
+###################################################################################################################################
+async def update_message_time(state: FSMContext):
+    try:
+        async with state.proxy() as data:
+            i = data['i']
+            msg = data['msg']
+            msg1 = data["msg1"]
+        while True:
+            try:
+                await asyncio.sleep(time_update)
+                button =  InlineKeyboardMarkup()
+                if len(msg[i-1]) > 5:
+                    if len(msg[i-1][2]) == 1:
+                        async with state.proxy() as data:
+                            time = data['time']
+                            call_data = data['call_data']
+                        for j in range(msg[i-1][6]):
+                            if int(call_data) != j :
+                                button_h = types.InlineKeyboardButton(chr(ord('a') + j), callback_data = str(j))
+                                button.add(button_h)
+                            else:
+                                button_h = types.InlineKeyboardButton("[" + chr(ord('a') + j) + "]", callback_data = str(j))
+                                button.add(button_h)
+                    else:
+                        async with state.proxy() as data:
+                            time = data['time']
+                            call_data_multiple_answers = data['call_data_multiple_answers']
+                        j1 = 0
+                        for j in range(msg[i-1][6]):
+                            if len(call_data_multiple_answers) > j1:
+                                if call_data_multiple_answers[j1] != str(j) :
+                                    button_h = types.InlineKeyboardButton(chr(ord('a') + j), callback_data = str(j))
+                                    button.add(button_h)
+                                else:
+                                    button_h = types.InlineKeyboardButton("[" + chr(ord('a') + j) + "]", callback_data = str(j))
+                                    #button_h = types.InlineKeyboardButton("Выбран - " + chr(ord('a') + j), callback_data = str(j))
+                                    button.add(button_h)
+                                    j1 = j1 + 1
+                            else:
+                                button_h = types.InlineKeyboardButton(chr(ord('a') + j), callback_data = str(j))
+                                button.add(button_h)
+                if len(msg)-1 == i:
+                    button_h_1 = types.InlineKeyboardButton("Назад", callback_data = "prev")
+                    button_h_2 = types.InlineKeyboardButton("Закончить тест", callback_data = "next")
+                    button.row(button_h_1, button_h_2)
+                else:
+                    flag = 0
+                    for ji in range(i-1):
+                        if (len(msg[ji]) == 8) or (len(msg[ji]) == 9):
+                            if msg[ji][7] != 0:
+                                flag = 1
+                        elif (len(msg[ji]) == 4) or (len(msg[ji]) == 5):
+                            if msg[ji][3] != 0:
+                                flag = 1
+                    if flag == 1:
+                        button_h_1 = types.InlineKeyboardButton("Назад", callback_data = "prev")
+                        button_h_2 = types.InlineKeyboardButton("Далее", callback_data = "next")
+                        button.row(button_h_1, button_h_2)
+                    else:
+                        button_h_2 = types.InlineKeyboardButton("Далее", callback_data = "next")
+                        button.add(button_h_2)
+                async with state.proxy() as data:
+                    time = data['time']
+                time_2 = datetime.datetime.now() - time
+                if len(msg[i-1]) > 5:
+                    button_h = types.InlineKeyboardButton("Осталось времени: " + str(int(msg[i-1][7]) - int(time_2.total_seconds())) + "c", callback_data = "None")
+                else:
+                    button_h = types.InlineKeyboardButton("Осталось времени: " + str(int(msg[i-1][3]) - int(time_2.total_seconds())) + "c", callback_data = "None")
+                button.add(button_h)
+                await msg1.edit_reply_markup(reply_markup=button)
+            except MessageNotModified:
+                pass
+    except:
+        pass
 ###################################################################################################################################
 async def update_message(call: types.CallbackQuery, state: FSMContext, call_data):
     try:
@@ -31,11 +105,11 @@ async def update_message(call: types.CallbackQuery, state: FSMContext, call_data
                 #button_h = types.InlineKeyboardButton("Выбран - " + chr(ord('a') + j), callback_data = str(j))
                 button.add(button_h)
         
-        if len(msg) == i:
+        if len(msg)-1 == i:
             button_h_1 = types.InlineKeyboardButton("Назад", callback_data = "prev")
             button_h_2 = types.InlineKeyboardButton("Закончить тест", callback_data = "next")
             button.row(button_h_1, button_h_2)
-        elif len(msg) != i:
+        else:
             flag = 0
             for ji in range(i-1):
                 if (len(msg[ji]) == 8) or (len(msg[ji]) == 9):
@@ -51,6 +125,11 @@ async def update_message(call: types.CallbackQuery, state: FSMContext, call_data
             else:
                 button_h_2 = types.InlineKeyboardButton("Далее", callback_data = "next")
                 button.add(button_h_2)
+        async with state.proxy() as data:
+            time = data['time']
+        time_2 = datetime.datetime.now() - time
+        button_h = types.InlineKeyboardButton("Осталось времени: " + str(int(msg[i-1][7]) - int(time_2.total_seconds())) + "c", callback_data = "None")
+        button.add(button_h)
         await call.message.edit_reply_markup(reply_markup=button)
     except:
         pass
@@ -75,11 +154,11 @@ async def update_message_multiple_answers(call: types.CallbackQuery, state: FSMC
             else:
                 button_h = types.InlineKeyboardButton(chr(ord('a') + j), callback_data = str(j))
                 button.add(button_h)
-        if len(msg) == i:
+        if len(msg)-1 == i:
             button_h_1 = types.InlineKeyboardButton("Назад", callback_data = "prev")
             button_h_2 = types.InlineKeyboardButton("Закончить тест", callback_data = "next")
             button.row(button_h_1, button_h_2)
-        elif len(msg) != i:
+        else:
             flag = 0
             for ji in range(i-1):
                 if (len(msg[ji]) == 8) or (len(msg[ji]) == 9):
@@ -95,6 +174,11 @@ async def update_message_multiple_answers(call: types.CallbackQuery, state: FSMC
             else:
                 button_h_2 = types.InlineKeyboardButton("Далее", callback_data = "next")
                 button.add(button_h_2)
+        async with state.proxy() as data:
+            time = data['time']
+        time_2 = datetime.datetime.now() - time
+        button_h = types.InlineKeyboardButton("Осталось времени: " + str(int(msg[i-1][7]) - int(time_2.total_seconds())) + "c", callback_data = "None")
+        button.add(button_h)
         await call.message.edit_reply_markup(reply_markup=button)
     except:
         pass
@@ -175,8 +259,7 @@ async def passing_the_test(call: types.CallbackQuery, state: FSMContext):
     except:
         await call.message.answer("Произошла ошибка 6001")
         await state.finish()
-
-
+###################################################################################################################################
 async def passing_the_test1(message: types.Message, state: FSMContext):
     try:
         code = BotDB.get_test(message.text)
@@ -406,11 +489,11 @@ async def passing_the_test3(message: types.Message, state: FSMContext):
         else:
             if (len(msg[i]) == 8) or (len(msg[i]) == 9):
                 button = msg[i][1]
-                if len(msg)-1 == i:
+                if len(msg)-2 == i:
                     button_h_1 = types.InlineKeyboardButton("Назад", callback_data = "prev")
                     button_h_2 = types.InlineKeyboardButton("Закончить тест", callback_data = "next")
                     button.row(button_h_1, button_h_2)
-                elif len(msg)-1 != i:
+                else:
                     flag = 0
                     for ji in range(i):
                         if (len(msg[ji]) == 8) or (len(msg[ji]) == 9):
@@ -428,9 +511,12 @@ async def passing_the_test3(message: types.Message, state: FSMContext):
                         button.add(button_h_2)
                 text = msg[i][0]
                 if msg[i][7] != 0:
+                    button_h = types.InlineKeyboardButton("Осталось времени: " + str(int(msg[i][7])) + "c", callback_data = "None")
                     text = text + "\n Вопрос будет удален через " + str(msg[i][7]) + " секунд"
                 else:
+                    button_h = types.InlineKeyboardButton("Осталось времени: " + str(int(test_time)) + "c", callback_data = "None")
                     text = text + "\n Вопрос будет удален через " + str(test_time) + " секунд"
+                button.add(button_h)
                 #добавление фото
                 if msg[i][3] != None:
                     photo = open(msg[i][3], 'rb')
@@ -444,6 +530,7 @@ async def passing_the_test3(message: types.Message, state: FSMContext):
                     data['call_data'] = -1
                     data['call_data_multiple_answers'] = []
                 await test_status.Q3.set()
+                asyncio.create_task(update_message_time(state))
                 if msg[i-1][7] != 0:
                     asyncio.create_task(delete_message(state, msg1, msg[i-1][7]))
                 else:
@@ -452,12 +539,12 @@ async def passing_the_test3(message: types.Message, state: FSMContext):
                 async with state.proxy() as data:
                     data['time'] = time
             elif (len(msg[i]) == 4) or (len(msg[i]) == 5):
-                if len(msg)-1 == i:
-                    button =  InlineKeyboardMarkup()
+                button =  InlineKeyboardMarkup()
+                if len(msg)-2 == i:
                     button_h_1 = types.InlineKeyboardButton("Назад", callback_data = "prev")
                     button_h_2 = types.InlineKeyboardButton("Закончить тест", callback_data = "next")
                     button.row(button_h_1, button_h_2)
-                elif len(msg)-1 != i:
+                else:
                     flag = 0
                     for ji in range(i):
                         if (len(msg[ji]) == 8) or (len(msg[ji]) == 9):
@@ -467,19 +554,20 @@ async def passing_the_test3(message: types.Message, state: FSMContext):
                             if msg[ji][3] != 0:
                                 flag = 1
                     if flag == 1:
-                        button =  InlineKeyboardMarkup()
                         button_h_1 = types.InlineKeyboardButton("Назад", callback_data = "prev")
                         button_h_2 = types.InlineKeyboardButton("Далее", callback_data = "next")
                         button.row(button_h_1, button_h_2)
                     else:
-                        button =  InlineKeyboardMarkup()
                         button_h_2 = types.InlineKeyboardButton("Далее", callback_data = "next")
                         button.add(button_h_2)
                 text = msg[i][0]
                 if msg[i][3] != 0:
+                    button_h = types.InlineKeyboardButton("Осталось времени: " + str(msg[i][3]) + "c", callback_data = "None")
                     text = text + "\n Вопрос будет удален через " + str(msg[i][3]) + " секунд"
                 else:
+                    button_h = types.InlineKeyboardButton("Осталось времени: " + str(test_time) + "c", callback_data = "None")
                     text = text + "\n Вопрос будет удален через " + str(test_time) + " секунд"
+                button.add(button_h)
                 if msg[i][2] != None:
                     photo = open(msg[i][2], 'rb')
                     msg1 = await message.answer_photo(photo, caption = text, reply_markup = button)
@@ -492,6 +580,7 @@ async def passing_the_test3(message: types.Message, state: FSMContext):
                     data['call_data'] = -1
                     data['call_data_multiple_answers'] = []
                 await test_status.Q4.set()
+                asyncio.create_task(update_message_time(state))
                 if msg[i-1][3] != 0:
                     asyncio.create_task(delete_message(state, msg1, msg[i-1][3], mode = 1))
                 else:
@@ -788,12 +877,7 @@ async def text_response(message: types.Message, state: FSMContext):
     except:
         await message.answer("Произошла ошибка 6010")
         await state.finish()
-
-
-
-
-
-
+        
 
 
 
