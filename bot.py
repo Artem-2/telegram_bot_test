@@ -70,7 +70,7 @@ async def main():
         for c in config2.tg_bot.admin_ids:
             await bot.send_message(c,'Бот запущен')
     except:
-        print("Неверный id админа\n")
+        print("Неверный id админа \n")
     # Start
     try:
         await dp.start_polling()
