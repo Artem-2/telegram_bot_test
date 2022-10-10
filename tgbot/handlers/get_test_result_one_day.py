@@ -1,6 +1,6 @@
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
-
+import asyncio
 import datetime
 from aiogram.types import InlineKeyboardMarkup
 from tgbot.middlewares.DBhelp import BotDB
@@ -41,8 +41,8 @@ async def get_test_result_one_day2(call: types.CallbackQuery, state: FSMContext)
             test_id = BotDB.get_test_user_create_id(int(call.from_user.id), str(call.data))
             res = BotDB.get_test_result_all(test_id[0][0])
             data_2 = datetime.datetime.now()
+            message_id_all = []
             for r in res:
-        
                 data = datetime.datetime.strptime(r[3], '%Y-%m-%d %H:%M:%S')
                 data_3 = data_2 - data
                 if data_3.days < 10:
@@ -59,7 +59,9 @@ async def get_test_result_one_day2(call: types.CallbackQuery, state: FSMContext)
                     button =  InlineKeyboardMarkup()
                     button_h = types.InlineKeyboardButton(text="Удалить", callback_data=str(r[4]))
                     button.add(button_h)
-                    await call.message.answer(text, reply_markup = button)
+                    message_id = await call.message.answer(text, reply_markup = button)
+                    async with state.proxy() as data:
+                        data[str(r[4])] = message_id
             button =  InlineKeyboardMarkup()
             button_h = types.InlineKeyboardButton(text="Назад", callback_data="start")
             button.add(button_h)
@@ -84,14 +86,16 @@ async def get_test_result_one_day3(call: types.CallbackQuery, state: FSMContext)
                 flag = 1
         if flag == 1:
             BotDB.test_result_del(call.data)
-            button =  InlineKeyboardMarkup()
-            button_h = types.InlineKeyboardButton(text="Назад", callback_data="start")
-            button.add(button_h)
-            await call.message.answer("Результат теста удален", reply_markup = button)
+            async with state.proxy() as data:
+                message_id = data[call.data]
+            try:
+                asyncio.create_task(await message_id.delete())
+            except:
+                pass
         else:
             pass
     except:
-        await call.message.answer("Произошла ошибка 4002")
+        await call.message.answer("Произошла ошибка 4003")
         await state.finish()
 
 
