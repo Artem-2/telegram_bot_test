@@ -5,7 +5,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.contrib.fsm_storage.redis import RedisStorage2
 
-from tgbot.config import bot
+from tgbot.config import bot 
 from tgbot.config import dp
 from tgbot.config import config2
 from tgbot.filters.admin import AdminFilter
