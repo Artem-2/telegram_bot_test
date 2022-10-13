@@ -56,7 +56,7 @@ async def update_message_time(state: FSMContext):
                             else:
                                 button_h = types.InlineKeyboardButton(chr(ord('a') + j), callback_data = str(j))
                                 button.add(button_h)
-                if len(msg)-1 == i:
+                if len(msg) == i:
                     button_h_1 = types.InlineKeyboardButton("Назад", callback_data = "prev")
                     button_h_2 = types.InlineKeyboardButton("Закончить тест", callback_data = "next")
                     button.row(button_h_1, button_h_2)
@@ -105,7 +105,7 @@ async def update_message(call: types.CallbackQuery, state: FSMContext, call_data
                 #button_h = types.InlineKeyboardButton("Выбран - " + chr(ord('a') + j), callback_data = str(j))
                 button.add(button_h)
         
-        if len(msg)-1 == i:
+        if len(msg) == i:
             button_h_1 = types.InlineKeyboardButton("Назад", callback_data = "prev")
             button_h_2 = types.InlineKeyboardButton("Закончить тест", callback_data = "next")
             button.row(button_h_1, button_h_2)
@@ -154,7 +154,7 @@ async def update_message_multiple_answers(call: types.CallbackQuery, state: FSMC
             else:
                 button_h = types.InlineKeyboardButton(chr(ord('a') + j), callback_data = str(j))
                 button.add(button_h)
-        if len(msg)-1 == i:
+        if len(msg) == i:
             button_h_1 = types.InlineKeyboardButton("Назад", callback_data = "prev")
             button_h_2 = types.InlineKeyboardButton("Закончить тест", callback_data = "next")
             button.row(button_h_1, button_h_2)
@@ -331,92 +331,97 @@ async def passing_the_test2(call: types.CallbackQuery, state: FSMContext):
         BotDB.test_result_add(user_id[0],test_id)
         #проверка режима работы теста рандомный и нет
         i1 = BotDB.get_test_random_mode(test_id)
+        k = 0
         if i1[0] == 1:
             for s in random.sample(question,len(question)):
-                right_otv = []
-                all = "Вопрос:\n" + str(s[1])
-                if len(BotDB.get_answer_test_right(s[0])) > 1:
-                    all = all + "\n\nВопрос с несколькими вариантами ответа"
-                elif len(BotDB.get_answer_test_right(s[0])) == 1:
-                    all = all + "\n\nВопрос с одним вариантом ответа"
-                answers = BotDB.get_answer_test(s[0])
-                if len(answers) != 0:
-                    i = 0
-                    button =  InlineKeyboardMarkup()
-                    answer_get = []
-                    for answer in random.sample(answers,len(answers)):
-                        all = all + "\n" + chr(ord('a') + i) + ") " + str(answer[0])
-                        button_h = types.InlineKeyboardButton(chr(ord('a') + i), callback_data = str(i))
-                        answer_get.append(answer[2])
-                        if answer[1] == 1:
-                            right_otv.append(i)
-                        i = i+1
-                        button.add(button_h)
-                    #добавление картинки к вопросу
-                    img = BotDB.get_question_test_pictures_id(s[0])
-                    photo = None
-                    if(img[0] != None):
-                        photo = os.path.join(".","pictures",str(img[0])+".png")
-                    number_of_answer = len(answers)
-                    if s[2] != 0:
-                        msg_a = all, button, right_otv, photo, s[0], answer_get, number_of_answer, s[2]
+                if k < len_test[0]:
+                    right_otv = []
+                    all = "Вопрос:\n" + str(s[1])
+                    if len(BotDB.get_answer_test_right(s[0])) > 1:
+                        all = all + "\n\nВопрос с несколькими вариантами ответа"
+                    elif len(BotDB.get_answer_test_right(s[0])) == 1:
+                        all = all + "\n\nВопрос с одним вариантом ответа"
+                    answers = BotDB.get_answer_test(s[0])
+                    if len(answers) != 0:
+                        i = 0
+                        button =  InlineKeyboardMarkup()
+                        answer_get = []
+                        for answer in random.sample(answers,len(answers)):
+                            all = all + "\n" + chr(ord('a') + i) + ") " + str(answer[0])
+                            button_h = types.InlineKeyboardButton(chr(ord('a') + i), callback_data = str(i))
+                            answer_get.append(answer[2])
+                            if answer[1] == 1:
+                                right_otv.append(i)
+                            i = i+1
+                            button.add(button_h)
+                        #добавление картинки к вопросу
+                        img = BotDB.get_question_test_pictures_id(s[0])
+                        photo = None
+                        if(img[0] != None):
+                            photo = os.path.join(".","pictures",str(img[0])+".png")
+                        number_of_answer = len(answers)
+                        if s[2] != 0:
+                            msg_a = all, button, right_otv, photo, s[0], answer_get, number_of_answer, s[2]
+                        else:
+                            msg_a = all, button, right_otv, photo, s[0], answer_get, number_of_answer, test_time
+                        msg.append(msg_a)
                     else:
-                        msg_a = all, button, right_otv, photo, s[0], answer_get, number_of_answer, test_time
-                    msg.append(msg_a)
-                else:
-                    img = BotDB.get_question_test_pictures_id(s[0])
-                    photo = None
-                    if(img[0] != None):
-                        photo = os.path.join(".","pictures",str(img[0])+".png")
-                    all = all + "\n\nОтвет на вопрос необходимо написать"
-                    if s[2] != 0:
-                        msg_a = all, s[0] ,photo, s[2]
-                    else:
-                        msg_a = all, s[0] ,photo, test_time
-                    msg.append(msg_a)
+                        img = BotDB.get_question_test_pictures_id(s[0])
+                        photo = None
+                        if(img[0] != None):
+                            photo = os.path.join(".","pictures",str(img[0])+".png")
+                        all = all + "\n\nОтвет на вопрос необходимо написать"
+                        if s[2] != 0:
+                            msg_a = all, s[0] ,photo, s[2]
+                        else:
+                            msg_a = all, s[0] ,photo, test_time
+                        msg.append(msg_a)
+                    k = k + 1
         else:
             for s in question:
-                right_otv = []
-                all = "Вопрос:\n" + str(s[1])
-                if len(BotDB.get_answer_test_right(s[0])) > 1:
-                    all = all + "\n\nВопрос с несколькими вариантами ответа"
-                elif len(BotDB.get_answer_test_right(s[0])) == 1:
-                    all = all + "\n\nВопрос с одним вариантом ответа"
-                answers = BotDB.get_answer_test(s[0])
-                if len(answers) != 0:
-                    i = 0
-                    button =  InlineKeyboardMarkup()
-                    answer_get = []
-                    for answer in random.sample(answers,len(answers)):
-                        all = all + "\n" + chr(ord('a') + i) + ") " + str(answer[0])
-                        button_h = types.InlineKeyboardButton(chr(ord('a') + i), callback_data = str(i))
-                        answer_get.append(answer[2])
-                        if answer[1] == 1:
-                            right_otv.append(i)
-                        i = i+1
-                        button.add(button_h)
-                    #добавление картинки к вопросу
-                    img = BotDB.get_question_test_pictures_id(s[0])
-                    photo = None
-                    if(img[0] != None):
-                        photo = os.path.join(".","pictures",str(img[0])+".png")
-                    number_of_answer = len(answers)
-                    if s[2] != 0:
-                        msg_a = all, button, right_otv, photo, s[0], answer_get, number_of_answer, s[2]
+                if k < len_test[0]:
+                    right_otv = []
+                    all = "Вопрос:\n" + str(s[1])
+                    if len(BotDB.get_answer_test_right(s[0])) > 1:
+                        all = all + "\n\nВопрос с несколькими вариантами ответа"
+                    elif len(BotDB.get_answer_test_right(s[0])) == 1:
+                        all = all + "\n\nВопрос с одним вариантом ответа"
+                    answers = BotDB.get_answer_test(s[0])
+                    if len(answers) != 0:
+                        i = 0
+                        button =  InlineKeyboardMarkup()
+                        answer_get = []
+                        for answer in random.sample(answers,len(answers)):
+                            all = all + "\n" + chr(ord('a') + i) + ") " + str(answer[0])
+                            button_h = types.InlineKeyboardButton(chr(ord('a') + i), callback_data = str(i))
+                            answer_get.append(answer[2])
+                            if answer[1] == 1:
+                                right_otv.append(i)
+                            i = i+1
+                            button.add(button_h)
+                        #добавление картинки к вопросу
+                        img = BotDB.get_question_test_pictures_id(s[0])
+                        photo = None
+                        if(img[0] != None):
+                            photo = os.path.join(".","pictures",str(img[0])+".png")
+                        number_of_answer = len(answers)
+                        if s[2] != 0:
+                            msg_a = all, button, right_otv, photo, s[0], answer_get, number_of_answer, s[2]
+                        else:
+                            msg_a = all, button, right_otv, photo, s[0], answer_get, number_of_answer, test_time
+                        msg.append(msg_a)
                     else:
-                        msg_a = all, button, right_otv, photo, s[0], answer_get, number_of_answer, test_time
-                    msg.append(msg_a)
-                else:
-                    img = BotDB.get_question_test_pictures_id(s[0])
-                    photo = None
-                    if(img[0] != None):
-                        photo = os.path.join(".","pictures",str(img[0])+".png")
-                    all = all + "\n\nОтвет на вопрос необходимо написать"
-                    if s[2] != 0:
-                        msg_a = all, s[0] ,photo, s[2]
-                    else:
-                        msg_a = all, s[0] ,photo, test_time
-                    msg.append(msg_a)
+                        img = BotDB.get_question_test_pictures_id(s[0])
+                        photo = None
+                        if(img[0] != None):
+                            photo = os.path.join(".","pictures",str(img[0])+".png")
+                        all = all + "\n\nОтвет на вопрос необходимо написать"
+                        if s[2] != 0:
+                            msg_a = all, s[0] ,photo, s[2]
+                        else:
+                            msg_a = all, s[0] ,photo, test_time
+                        msg.append(msg_a)
+                    k = k + 1
         i = 0
         async with state.proxy() as data:
             data['user'] = user_and_test[0]
@@ -489,7 +494,7 @@ async def passing_the_test3(message: types.Message, state: FSMContext):
         else:
             if (len(msg[i]) == 8) or (len(msg[i]) == 9):
                 button = msg[i][1]
-                if len(msg)-2 == i:
+                if len(msg)-1 == i:
                     button_h_1 = types.InlineKeyboardButton("Назад", callback_data = "prev")
                     button_h_2 = types.InlineKeyboardButton("Закончить тест", callback_data = "next")
                     button.row(button_h_1, button_h_2)
@@ -540,7 +545,7 @@ async def passing_the_test3(message: types.Message, state: FSMContext):
                     data['time'] = time
             elif (len(msg[i]) == 4) or (len(msg[i]) == 5):
                 button =  InlineKeyboardMarkup()
-                if len(msg)-2 == i:
+                if len(msg)-1 == i:
                     button_h_1 = types.InlineKeyboardButton("Назад", callback_data = "prev")
                     button_h_2 = types.InlineKeyboardButton("Закончить тест", callback_data = "next")
                     button.row(button_h_1, button_h_2)
