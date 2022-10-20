@@ -80,10 +80,12 @@ async def update_message_time(state: FSMContext):
                     time = data['time']
                 time_2 = datetime.datetime.now() - time
                 if len(msg[i-1]) > 5:
-                    button_h = types.InlineKeyboardButton("Осталось времени: " + str(int(msg[i-1][7]) - int(time_2.total_seconds())) + "c", callback_data = "None")
+                    button_h_1 = types.InlineKeyboardButton("Осталось времени: " + str(int(msg[i-1][7]) - int(time_2.total_seconds())) + "c", callback_data = "None")
+                    button_h_2 = types.InlineKeyboardButton(str(i) + "-й вопрос из " + str(len(msg)), callback_data = "None")
                 else:
-                    button_h = types.InlineKeyboardButton("Осталось времени: " + str(int(msg[i-1][3]) - int(time_2.total_seconds())) + "c", callback_data = "None")
-                button.add(button_h)
+                    button_h_1 = types.InlineKeyboardButton("Осталось времени: " + str(int(msg[i-1][3]) - int(time_2.total_seconds())) + "c", callback_data = "None")
+                    button_h_2 = types.InlineKeyboardButton(str(i) + "-й вопрос из " + str(len(msg)), callback_data = "None")
+                button.row(button_h_1,button_h_2)
                 await msg1.edit_reply_markup(reply_markup=button)
             except MessageNotModified:
                 pass
@@ -128,8 +130,9 @@ async def update_message(call: types.CallbackQuery, state: FSMContext, call_data
         async with state.proxy() as data:
             time = data['time']
         time_2 = datetime.datetime.now() - time
-        button_h = types.InlineKeyboardButton("Осталось времени: " + str(int(msg[i-1][7]) - int(time_2.total_seconds())) + "c", callback_data = "None")
-        button.add(button_h)
+        button_h_1 = types.InlineKeyboardButton("Осталось времени: " + str(int(msg[i-1][7]) - int(time_2.total_seconds())) + "c", callback_data = "None")
+        button_h_2 = types.InlineKeyboardButton(str(i) + "-й вопрос из " + str(len(msg)), callback_data = "None")
+        button.row(button_h_1, button_h_2)
         await call.message.edit_reply_markup(reply_markup=button)
     except:
         pass
@@ -177,8 +180,9 @@ async def update_message_multiple_answers(call: types.CallbackQuery, state: FSMC
         async with state.proxy() as data:
             time = data['time']
         time_2 = datetime.datetime.now() - time
-        button_h = types.InlineKeyboardButton("Осталось времени: " + str(int(msg[i-1][7]) - int(time_2.total_seconds())) + "c", callback_data = "None")
-        button.add(button_h)
+        button_h_1 = types.InlineKeyboardButton("Осталось времени: " + str(int(msg[i-1][7]) - int(time_2.total_seconds())) + "c", callback_data = "None")
+        button_h_2 = types.InlineKeyboardButton(str(i) + "-й вопрос из " + str(len(msg)), callback_data = "None")
+        button.row(button_h_1, button_h_2)
         await call.message.edit_reply_markup(reply_markup=button)
     except:
         pass
@@ -516,12 +520,12 @@ async def passing_the_test3(message: types.Message, state: FSMContext):
                         button.add(button_h_2)
                 text = msg[i][0]
                 if msg[i][7] != 0:
-                    button_h = types.InlineKeyboardButton("Осталось времени: " + str(int(msg[i][7])) + "c", callback_data = "None")
-                    text = text + "\n Вопрос будет удален через " + str(msg[i][7]) + " секунд"
+                    button_h_1 = types.InlineKeyboardButton("Осталось времени: " + str(int(msg[i][7])) + "c", callback_data = "None")
+                    button_h_2 = types.InlineKeyboardButton(str(i+1) + "-й вопрос из " + str(len(msg)), callback_data = "None")
                 else:
-                    button_h = types.InlineKeyboardButton("Осталось времени: " + str(int(test_time)) + "c", callback_data = "None")
-                    text = text + "\n Вопрос будет удален через " + str(test_time) + " секунд"
-                button.add(button_h)
+                    button_h_1 = types.InlineKeyboardButton("Осталось времени: " + str(int(test_time)) + "c", callback_data = "None")
+                    button_h_2 = types.InlineKeyboardButton(str(i+1) + "-й вопрос из " + str(len(msg)), callback_data = "None")
+                button.row(button_h_1, button_h_2)
                 #добавление фото
                 if msg[i][3] != None:
                     photo = open(msg[i][3], 'rb')
@@ -567,12 +571,12 @@ async def passing_the_test3(message: types.Message, state: FSMContext):
                         button.add(button_h_2)
                 text = msg[i][0]
                 if msg[i][3] != 0:
-                    button_h = types.InlineKeyboardButton("Осталось времени: " + str(msg[i][3]) + "c", callback_data = "None")
-                    text = text + "\n Вопрос будет удален через " + str(msg[i][3]) + " секунд"
+                    button_h_1 = types.InlineKeyboardButton("Осталось времени: " + str(int(msg[i][3])) + "c", callback_data = "None")
+                    button_h_2 = types.InlineKeyboardButton(str(i+1) + "-й вопрос из " + str(len(msg)), callback_data = "None")
                 else:
-                    button_h = types.InlineKeyboardButton("Осталось времени: " + str(test_time) + "c", callback_data = "None")
-                    text = text + "\n Вопрос будет удален через " + str(test_time) + " секунд"
-                button.add(button_h)
+                    button_h_1 = types.InlineKeyboardButton("Осталось времени: " + str(int(test_time)) + "c", callback_data = "None")
+                    button_h_2 = types.InlineKeyboardButton(str(i+1) + "-й вопрос из " + str(len(msg)), callback_data = "None")
+                button.row(button_h_1, button_h_2)
                 if msg[i][2] != None:
                     photo = open(msg[i][2], 'rb')
                     msg1 = await message.answer_photo(photo, caption = text, reply_markup = button)
@@ -590,9 +594,9 @@ async def passing_the_test3(message: types.Message, state: FSMContext):
                     asyncio.create_task(delete_message(state, msg1, msg[i-1][3], mode = 1))
                 else:
                     asyncio.create_task(delete_message(state, msg1, test_time, mode = 1))
-                time = datetime.datetime.now()
-                async with state.proxy() as data:
-                    data['time'] = time
+        async with state.proxy() as data:
+            data['time'] = datetime.datetime.now()
+            data['time_next_prev'] = datetime.datetime.now()
     except:
         await message.answer("Произошла ошибка 6004")
         await state.finish()
@@ -646,68 +650,74 @@ async def callbacks_next(call: types.CallbackQuery, state: FSMContext):
             msg1 = data['msg1']
             i = data['i']
             call_data_multiple_answers = data['call_data_multiple_answers']
-        id2 = BotDB.get_test_result(user,test)
-        id1 = id2[len(id2)-1][0]
-        #проверка правильности ответа
-        id = 0
-        if (len(msg[i-1][2]) == 1) and (len(msg[i-1]) == 8):
-            if str(msg[i-1][2][0]) == call_data:
-                id = BotDB.answer_question_result(id1,True,msg[i-1][4],msg[i-1][5][int(call_data)])
-            else: 
-                id = BotDB.answer_question_result(id1,False,msg[i-1][4],msg[i-1][5][int(call_data)])
-        elif (len(msg[i-1][2]) > 1) and (len(msg[i-1]) == 8):
-            flag = 0
-            if len(msg[i-1][2]) == len(call_data_multiple_answers):
-                for j in range(len(msg[i-1][2]) - 1):
-                    if str(msg[i-1][2][j]) != call_data_multiple_answers[j]:
-                        flag = 1
-            else:
-                flag = 1
-            text = "multiple_answers:"
-            for c in call_data_multiple_answers:
-                text = text + ',' + str(msg[i-1][5][int(c)])
-            if flag != 0:
-                id = BotDB.answer_question_result_multiple_answers(id1,False,msg[i-1][4],text)
-            else:
-                id = BotDB.answer_question_result_multiple_answers(id1,True,msg[i-1][4],text)
-        elif (len(msg[i-1][2]) == 1) and (len(msg[i-1]) == 9):
-            if str(msg[i-1][2][0]) == call_data:
-                BotDB.answer_question_result_update(msg[i-1][8], id1,True,msg[i-1][4],msg[i-1][5][int(call_data)])
-            else: 
-                BotDB.answer_question_result_update(msg[i-1][8], id1,False,msg[i-1][4],msg[i-1][5][int(call_data)])
-        elif (len(msg[i-1][2]) > 1) and (len(msg[i-1]) == 9):
-            flag = 0
-            if len(msg[i-1][2]) == len(call_data_multiple_answers):
-                for j in range(len(msg[i-1][2]) - 1):
-                    if str(msg[i-1][2][j]) != call_data_multiple_answers[j]:
-                        flag = 1
-            else:
-                flag = 1
-            text = "multiple_answers:"
-            for c in call_data_multiple_answers:
-                text = text + ',' + str(msg[i-1][5][int(c)])
-            if flag != 0:
-                BotDB.answer_question_result_multiple_answers_update(msg[i-1][8], id1,False,msg[i-1][4],text)
-            else:
-                BotDB.answer_question_result_multiple_answers_update(msg[i-1][8], id1,True,msg[i-1][4],text)
-
-        #удаление сообщения в случае ответа
-        if (len(msg[i-1]) == 8) or (len(msg[i-1]) == 4):
-            await delete_message(state, msg1, 0, 0, id_ovet = id)
-        elif (len(msg[i-1]) == 9) or (len(msg[i-1]) == 5):
-            await delete_message(state, msg1, 0, 0)
-        ji = -1
-        for j in range(len(msg)):
-            if ((len(msg[j]) == 8) or (len(msg[j]) == 9)) and (i - 1 < j) and (ji == -1):
-                if msg[j][7] != 0:
-                    ji = j
-            elif ((len(msg[j]) == 4) or (len(msg[j]) == 5)) and (i - 1 < j) and (ji == -1):
-                if msg[j][3] != 0:
-                    ji = j
-        if ji != -1:
+            time_next_prev = data['time_next_prev']
+        time = datetime.datetime.now()
+        time_2 = time - time_next_prev
+        if time_2.total_seconds() > 1:
             async with state.proxy() as data:
-                data['i'] = ji
-        await passing_the_test3(call.message, state)
+                data['time_next_prev']  = datetime.datetime.now()
+            id2 = BotDB.get_test_result(user,test)
+            id1 = id2[len(id2)-1][0]
+            #проверка правильности ответа
+            id = 0
+            if (len(msg[i-1][2]) == 1) and (len(msg[i-1]) == 8):
+                if str(msg[i-1][2][0]) == call_data:
+                    id = BotDB.answer_question_result(id1,True,msg[i-1][4],msg[i-1][5][int(call_data)])
+                else: 
+                    id = BotDB.answer_question_result(id1,False,msg[i-1][4],msg[i-1][5][int(call_data)])
+            elif (len(msg[i-1][2]) > 1) and (len(msg[i-1]) == 8):
+                flag = 0
+                if len(msg[i-1][2]) == len(call_data_multiple_answers):
+                    for j in range(len(msg[i-1][2]) - 1):
+                        if str(msg[i-1][2][j]) != call_data_multiple_answers[j]:
+                            flag = 1
+                else:
+                    flag = 1
+                text = "multiple_answers:"
+                for c in call_data_multiple_answers:
+                    text = text + ',' + str(msg[i-1][5][int(c)])
+                if flag != 0:
+                    id = BotDB.answer_question_result_multiple_answers(id1,False,msg[i-1][4],text)
+                else:
+                    id = BotDB.answer_question_result_multiple_answers(id1,True,msg[i-1][4],text)
+            elif (len(msg[i-1][2]) == 1) and (len(msg[i-1]) == 9):
+                if str(msg[i-1][2][0]) == call_data:
+                    BotDB.answer_question_result_update(msg[i-1][8], id1,True,msg[i-1][4],msg[i-1][5][int(call_data)])
+                else: 
+                    BotDB.answer_question_result_update(msg[i-1][8], id1,False,msg[i-1][4],msg[i-1][5][int(call_data)])
+            elif (len(msg[i-1][2]) > 1) and (len(msg[i-1]) == 9):
+                flag = 0
+                if len(msg[i-1][2]) == len(call_data_multiple_answers):
+                    for j in range(len(msg[i-1][2]) - 1):
+                        if str(msg[i-1][2][j]) != call_data_multiple_answers[j]:
+                            flag = 1
+                else:
+                    flag = 1
+                text = "multiple_answers:"
+                for c in call_data_multiple_answers:
+                    text = text + ',' + str(msg[i-1][5][int(c)])
+                if flag != 0:
+                    BotDB.answer_question_result_multiple_answers_update(msg[i-1][8], id1,False,msg[i-1][4],text)
+                else:
+                    BotDB.answer_question_result_multiple_answers_update(msg[i-1][8], id1,True,msg[i-1][4],text)
+
+            #удаление сообщения в случае ответа
+            if (len(msg[i-1]) == 8) or (len(msg[i-1]) == 4):
+                await delete_message(state, msg1, 0, 0, id_ovet = id)
+            elif (len(msg[i-1]) == 9) or (len(msg[i-1]) == 5):
+                await delete_message(state, msg1, 0, 0)
+            ji = -1
+            for j in range(len(msg)):
+                if ((len(msg[j]) == 8) or (len(msg[j]) == 9)) and (i - 1 < j) and (ji == -1):
+                    if msg[j][7] != 0:
+                        ji = j
+                elif ((len(msg[j]) == 4) or (len(msg[j]) == 5)) and (i - 1 < j) and (ji == -1):
+                    if msg[j][3] != 0:
+                        ji = j
+            if ji != -1:
+                async with state.proxy() as data:
+                    data['i'] = ji
+            await passing_the_test3(call.message, state)
     except:
         await call.message.answer("Произошла ошибка 6006")
         await state.finish()
@@ -720,30 +730,36 @@ async def callbacks_next_text_response(call: types.CallbackQuery, state: FSMCont
             msg = data['msg']
             msg1 = data['msg1']
             i = data['i']
-        id2 = BotDB.get_test_result(user,test)
-        id1 = id2[len(id2)-1][0]
-        if len(msg[i-1]) == 4:
-            id = BotDB.answer_question_result_text_response(id1,msg[i-1][1],"None")
-            await delete_message(state, msg1, 0, 0, id_ovet = id)
-        elif len(msg[i-1]) == 5:
-            await delete_message(state, msg1, 0, 0)
-        #удаление сообщения в случае ответа
-        if (len(msg[i-1]) == 8) or (len(msg[i-1]) == 4):
-            await delete_message(state, msg1, 0, 0, id_ovet = id)
-        elif (len(msg[i-1]) == 9) or (len(msg[i-1]) == 5):
-            await delete_message(state, msg1, 0, 0)
-        ji = -1
-        for j in range(len(msg)):
-            if ((len(msg[j]) == 8) or (len(msg[j]) == 9)) and (i - 1 < j) and (ji == -1):
-                if msg[j][7] != 0:
-                    ji = j
-            elif ((len(msg[j]) == 4) or (len(msg[j]) == 5)) and (i - 1 < j) and (ji == -1):
-                if msg[j][3] != 0:
-                    ji = j
-        if ji != -1:
+            time_next_prev = data['time_next_prev']
+        time = datetime.datetime.now()
+        time_2 = time - time_next_prev
+        if time_2.total_seconds() > 1:
             async with state.proxy() as data:
-                data['i'] = ji
-        await passing_the_test3(call.message, state)
+                data['time_next_prev']  = datetime.datetime.now()
+            id2 = BotDB.get_test_result(user,test)
+            id1 = id2[len(id2)-1][0]
+            if len(msg[i-1]) == 4:
+                id = BotDB.answer_question_result_text_response(id1,msg[i-1][1],"None")
+                await delete_message(state, msg1, 0, 0, id_ovet = id)
+            elif len(msg[i-1]) == 5:
+                await delete_message(state, msg1, 0, 0)
+            #удаление сообщения в случае ответа
+            if (len(msg[i-1]) == 8) or (len(msg[i-1]) == 4):
+                await delete_message(state, msg1, 0, 0, id_ovet = id)
+            elif (len(msg[i-1]) == 9) or (len(msg[i-1]) == 5):
+                await delete_message(state, msg1, 0, 0)
+            ji = -1
+            for j in range(len(msg)):
+                if ((len(msg[j]) == 8) or (len(msg[j]) == 9)) and (i - 1 < j) and (ji == -1):
+                    if msg[j][7] != 0:
+                        ji = j
+                elif ((len(msg[j]) == 4) or (len(msg[j]) == 5)) and (i - 1 < j) and (ji == -1):
+                    if msg[j][3] != 0:
+                        ji = j
+            if ji != -1:
+                async with state.proxy() as data:
+                    data['i'] = ji
+            await passing_the_test3(call.message, state)
     except:
         await call.message.answer("Произошла ошибка 6007")
         await state.finish()
@@ -758,68 +774,74 @@ async def callbacks_prev(call: types.CallbackQuery, state: FSMContext):
             msg1 = data['msg1']
             i = data['i']
             call_data_multiple_answers = data['call_data_multiple_answers']
-        id2 = BotDB.get_test_result(user,test)
-        id1 = id2[len(id2)-1][0]
-        #проверка правильности ответа
-        id = 0
-        if (len(msg[i-1][2]) == 1) and (len(msg[i-1]) == 8):
-            if str(msg[i-1][2][0]) == call_data:
-                id = BotDB.answer_question_result(id1,True,msg[i-1][4],msg[i-1][5][int(call_data)])
-            else: 
-                id = BotDB.answer_question_result(id1,False,msg[i-1][4],msg[i-1][5][int(call_data)])
-        elif (len(msg[i-1][2]) > 1) and (len(msg[i-1]) == 8):
-            flag = 0
-            if len(msg[i-1][2]) == len(call_data_multiple_answers):
-                for j in range(len(msg[i-1][2]) - 1):
-                    if str(msg[i-1][2][j]) != call_data_multiple_answers[j]:
-                        flag = 1
-            else:
-                flag = 1
-            text = "multiple_answers:"
-            for c in call_data_multiple_answers:
-                text = text + ',' + str(msg[i-1][5][int(c)])
-            if flag != 0:
-                id = BotDB.answer_question_result_multiple_answers(id1,False,msg[i-1][4],text)
-            else:
-                id = BotDB.answer_question_result_multiple_answers(id1,True,msg[i-1][4],text)
-        elif (len(msg[i-1][2]) == 1) and (len(msg[i-1]) == 9):
-            if str(msg[i-1][2][0]) == call_data:
-                BotDB.answer_question_result_update(msg[i-1][8], id1,True,msg[i-1][4],msg[i-1][5][int(call_data)])
-            else: 
-                BotDB.answer_question_result_update(msg[i-1][8], id1,False,msg[i-1][4],msg[i-1][5][int(call_data)])
-        elif (len(msg[i-1][2]) > 1) and (len(msg[i-1]) == 9):
-            flag = 0
-            if len(msg[i-1][2]) == len(call_data_multiple_answers):
-                for j in range(len(msg[i-1][2]) - 1):
-                    if str(msg[i-1][2][j]) != call_data_multiple_answers[j]:
-                        flag = 1
-            else:
-                flag = 1
-            text = "multiple_answers:"
-            for c in call_data_multiple_answers:
-                text = text + ',' + str(msg[i-1][5][int(c)])
-            if flag != 0:
-                BotDB.answer_question_result_multiple_answers_update(msg[i-1][8], id1,False,msg[i-1][4],text)
-            else:
-                BotDB.answer_question_result_multiple_answers_update(msg[i-1][8], id1,True,msg[i-1][4],text)
-
-                #удаление сообщения в случае ответа
-        if (len(msg[i-1]) == 8) or (len(msg[i-1]) == 4):
-            await delete_message(state, msg1, 0, 0, id_ovet = id)
-        elif (len(msg[i-1]) == 9) or (len(msg[i-1]) == 5):
-            await delete_message(state, msg1, 0, 0)
-        ji = -1
-        for j in range(i-1):
-            if (len(msg[j]) == 8) or (len(msg[j]) == 9):
-                if msg[j][7] != 0:
-                    ji = j
-            elif (len(msg[j]) == 4) or (len(msg[j]) == 5):
-                if msg[j][3] != 0:
-                    ji = j
-        if ji != -1:
+            time_next_prev = data['time_next_prev']
+        time = datetime.datetime.now()
+        time_2 = time - time_next_prev
+        if time_2.total_seconds() > 1:
             async with state.proxy() as data:
-                data['i'] = ji
-        await passing_the_test3(call.message, state)
+                data['time_next_prev']  = datetime.datetime.now()
+            id2 = BotDB.get_test_result(user,test)
+            id1 = id2[len(id2)-1][0]
+            #проверка правильности ответа
+            id = 0
+            if (len(msg[i-1][2]) == 1) and (len(msg[i-1]) == 8):
+                if str(msg[i-1][2][0]) == call_data:
+                    id = BotDB.answer_question_result(id1,True,msg[i-1][4],msg[i-1][5][int(call_data)])
+                else: 
+                    id = BotDB.answer_question_result(id1,False,msg[i-1][4],msg[i-1][5][int(call_data)])
+            elif (len(msg[i-1][2]) > 1) and (len(msg[i-1]) == 8):
+                flag = 0
+                if len(msg[i-1][2]) == len(call_data_multiple_answers):
+                    for j in range(len(msg[i-1][2]) - 1):
+                        if str(msg[i-1][2][j]) != call_data_multiple_answers[j]:
+                            flag = 1
+                else:
+                    flag = 1
+                text = "multiple_answers:"
+                for c in call_data_multiple_answers:
+                    text = text + ',' + str(msg[i-1][5][int(c)])
+                if flag != 0:
+                    id = BotDB.answer_question_result_multiple_answers(id1,False,msg[i-1][4],text)
+                else:
+                    id = BotDB.answer_question_result_multiple_answers(id1,True,msg[i-1][4],text)
+            elif (len(msg[i-1][2]) == 1) and (len(msg[i-1]) == 9):
+                if str(msg[i-1][2][0]) == call_data:
+                    BotDB.answer_question_result_update(msg[i-1][8], id1,True,msg[i-1][4],msg[i-1][5][int(call_data)])
+                else: 
+                    BotDB.answer_question_result_update(msg[i-1][8], id1,False,msg[i-1][4],msg[i-1][5][int(call_data)])
+            elif (len(msg[i-1][2]) > 1) and (len(msg[i-1]) == 9):
+                flag = 0
+                if len(msg[i-1][2]) == len(call_data_multiple_answers):
+                    for j in range(len(msg[i-1][2]) - 1):
+                        if str(msg[i-1][2][j]) != call_data_multiple_answers[j]:
+                            flag = 1
+                else:
+                    flag = 1
+                text = "multiple_answers:"
+                for c in call_data_multiple_answers:
+                    text = text + ',' + str(msg[i-1][5][int(c)])
+                if flag != 0:
+                    BotDB.answer_question_result_multiple_answers_update(msg[i-1][8], id1,False,msg[i-1][4],text)
+                else:
+                    BotDB.answer_question_result_multiple_answers_update(msg[i-1][8], id1,True,msg[i-1][4],text)
+
+                    #удаление сообщения в случае ответа
+            if (len(msg[i-1]) == 8) or (len(msg[i-1]) == 4):
+                await delete_message(state, msg1, 0, 0, id_ovet = id)
+            elif (len(msg[i-1]) == 9) or (len(msg[i-1]) == 5):
+                await delete_message(state, msg1, 0, 0)
+            ji = -1
+            for j in range(i-1):
+                if (len(msg[j]) == 8) or (len(msg[j]) == 9):
+                    if msg[j][7] != 0:
+                        ji = j
+                elif (len(msg[j]) == 4) or (len(msg[j]) == 5):
+                    if msg[j][3] != 0:
+                        ji = j
+            if ji != -1:
+                async with state.proxy() as data:
+                    data['i'] = ji
+            await passing_the_test3(call.message, state)
     except:
         await call.message.answer("Произошла ошибка 6008")
         await state.finish()
@@ -832,30 +854,36 @@ async def callbacks_prev_text_response(call: types.CallbackQuery, state: FSMCont
             msg = data['msg']
             msg1 = data['msg1']
             i = data['i']
-        id2 = BotDB.get_test_result(user,test)
-        id1 = id2[len(id2)-1][0]
-        if len(msg[i-1]) == 4:
-            id = BotDB.answer_question_result_text_response(id1,msg[i-1][1],"None")
-            await delete_message(state, msg1, 0, 0, id_ovet = id)
-        elif len(msg[i-1]) == 5:
-            await delete_message(state, msg1, 0, 0)
-        #удаление сообщения в случае ответа
-        if (len(msg[i-1]) == 8) or (len(msg[i-1]) == 4):
-            await delete_message(state, msg1, 0, 0, id_ovet = id)
-        elif (len(msg[i-1]) == 9) or (len(msg[i-1]) == 5):
-            await delete_message(state, msg1, 0, 0)
-        ji = -1
-        for j in range(i-1):
-            if (len(msg[j]) == 8) or (len(msg[j]) == 9):
-                if msg[j][7] != 0:
-                    ji = j
-            elif (len(msg[j]) == 4) or (len(msg[j]) == 5):
-                if msg[j][3] != 0:
-                    ji = j
-        if ji != -1:
+            time_next_prev = data['time_next_prev']
+        time = datetime.datetime.now()
+        time_2 = time - time_next_prev
+        if time_2.total_seconds() > 1:
             async with state.proxy() as data:
-                data['i'] = ji
-        await passing_the_test3(call.message, state)
+                data['time_next_prev']  = datetime.datetime.now()
+            id2 = BotDB.get_test_result(user,test)
+            id1 = id2[len(id2)-1][0]
+            if len(msg[i-1]) == 4:
+                id = BotDB.answer_question_result_text_response(id1,msg[i-1][1],"None")
+                await delete_message(state, msg1, 0, 0, id_ovet = id)
+            elif len(msg[i-1]) == 5:
+                await delete_message(state, msg1, 0, 0)
+            #удаление сообщения в случае ответа
+            if (len(msg[i-1]) == 8) or (len(msg[i-1]) == 4):
+                await delete_message(state, msg1, 0, 0, id_ovet = id)
+            elif (len(msg[i-1]) == 9) or (len(msg[i-1]) == 5):
+                await delete_message(state, msg1, 0, 0)
+            ji = -1
+            for j in range(i-1):
+                if (len(msg[j]) == 8) or (len(msg[j]) == 9):
+                    if msg[j][7] != 0:
+                        ji = j
+                elif (len(msg[j]) == 4) or (len(msg[j]) == 5):
+                    if msg[j][3] != 0:
+                        ji = j
+            if ji != -1:
+                async with state.proxy() as data:
+                    data['i'] = ji
+            await passing_the_test3(call.message, state)
     except:
         await call.message.answer("Произошла ошибка 6009")
         await state.finish()
