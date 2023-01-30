@@ -165,6 +165,15 @@ class BotDB:
         semaphore_end()
         return r
 #########################################################################
+    def get_test_title_attempts_random_mode_questions(self, id):
+        semaphore_begin()
+        #получить критерии оценок
+        result = self.cursor.execute("SELECT title, number_attempts, random_mode, number_questions FROM test WHERE id = ?",(id,))
+        r = result.fetchone()
+        semaphore_end()
+        return r
+    
+
     def get_test_active_mode(self, id):
         semaphore_begin()
         #получить критерии оценок
