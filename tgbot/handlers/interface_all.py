@@ -23,6 +23,8 @@ async def interface_all_begin_def(message_id, message: types.Message, state: FSM
             if BotDB.user_exists(message_id) != None:
                 button_h = types.InlineKeyboardButton(text="Начать тест", callback_data="passing_the_test")
                 button.add(button_h)
+                button_h = types.InlineKeyboardButton(text="Начать тест v2", callback_data="passing_the_test_v2")
+                button.add(button_h)
                 num = BotDB.get_test_user_rename_number_of_changes(message_id)
                 if num[0] < number_of_changes_rename:
                     button_h = types.InlineKeyboardButton(text="Изменить имя", callback_data="rename")
@@ -57,6 +59,8 @@ async def interface_all_passing_the_test(call: types.CallbackQuery, state: FSMCo
         button =  InlineKeyboardMarkup()
         if BotDB.user_exists(call.from_user.id) != None:
             button_h = types.InlineKeyboardButton(text="Начать тест", callback_data="passing_the_test")
+            button.add(button_h)
+            button_h = types.InlineKeyboardButton(text="Начать тест v2", callback_data="passing_the_test_v2")
             button.add(button_h)
             num = BotDB.get_test_user_rename_number_of_changes(call.from_user.id)
             if num[0] < number_of_changes_rename:

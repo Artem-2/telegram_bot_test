@@ -16,6 +16,7 @@ from tgbot.handlers.get_test_result import register_get_test_result
 from tgbot.handlers.get_test_result_one_day import register_get_test_result_one_day
 from tgbot.handlers.activete_deactivete import register_activete
 from tgbot.handlers.passing_the_test import register_passing_the_test
+from tgbot.handlers.passing_the_test_v2 import register_passing_the_test_v2
 from tgbot.handlers.interface_all import register_interface_all
 from tgbot.handlers.registration_teachers import register_registration_teachers
 #from tgbot.middlewares.DBhelp import DbMiddleware 
@@ -42,6 +43,7 @@ def register_all_handlers(dp):
     register_test_create(dp)
     register_Registration(dp)
     register_passing_the_test(dp)
+    register_passing_the_test_v2(dp)
     register_interface_all(dp)
     register_get_test_result_admin(dp)
     register_get_test_result(dp)
