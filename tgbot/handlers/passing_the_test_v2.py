@@ -61,9 +61,15 @@ class question_class(object):
                         button_h = types.InlineKeyboardButton(chr(ord('a') + i), callback_data = str(i))
                 else:
                     button_h = types.InlineKeyboardButton(chr(ord('a') + i), callback_data = str(i))
-
-                if answer[1] == 1:
-                    self.correct_answer_number = i
+                if self.type == "one_answer":
+                    if answer[1] == 1:
+                        self.correct_answer_number = i
+                else:
+                    if answer[1] == 1:
+                        if type(self.correct_answer_number) == list:
+                            self.correct_answer_number.append(i)
+                        else:
+                            self.correct_answer_number = [i]
                 i = i+1
                 self.button.add(button_h)
     
@@ -89,6 +95,13 @@ class question_class(object):
     #удаление сообщений через определенное время
     async def deleting_messages_after_time_has_elapsed(self):
         await asyncio.sleep(self.response_time)
+        if self.message_id != None:
+            await self.message_id.delete()
+            self.message_id = None
+            self.response_time = 0
+    
+    #удаление сообщений 
+    async def deleting_messages(self):
         if self.message_id != None:
             await self.message_id.delete()
             self.message_id = None
@@ -262,26 +275,59 @@ async def sending_a_message(message: types.Message, state: FSMContext):
     asyncio.create_task(all_question_data[question_number].deleting_messages_after_time_has_elapsed())
     #запуск обновления таймера сообщения
     asyncio.create_task(all_question_data[question_number].updating_the_time_in_the_message(len_test, message))
-    await test_status_v2.Q3.set()
+    if all_question_data[question_number].type == "text":
+        await test_status_v2.Q4.set()
+    else:
+        await test_status_v2.Q3.set()
     async with state.proxy() as data:
         data["all_question_data"] = all_question_data
 
 ###################################################################################################################################
-async def callbacks_next(call: types.CallbackQuery, state: FSMContext):
+async def callbacks_next_prev(call: types.CallbackQuery, state: FSMContext):
     async with state.proxy() as data:
         id_of_the_test_results = data["id_of_the_test_results"]
         all_question_data = data["all_question_data"]
         question_number = data["question_number"]
         len_test = data["len_test"]
     question_data = all_question_data[question_number]
-    if question_data.response_id_in_the_database != None:
-        BotDB.answer_question_result_update(question_data.response_id_in_the_database, id_of_the_test_results, тут правильный ли ответ ,msg[i-1][4],msg[i-1][5][int(call_data)])
-        pass
+    #проверка есть ли вопрос в базе данных и есть ли ответ на него
+    if question_data.response_id_in_the_database != None and question_data.selected_answer_option != None:
+        #проверка на тип вопроса
+        if question_data.type == "one_answer":
+            is_correct_answer = question_data.correct_answer_number == question_data.selected_answer_option
+            #отправка результата в базу данных
+            BotDB.answer_question_result_update(question_data.response_id_in_the_database, id_of_the_test_results, is_correct_answer,question_data.question_id,question_data.answers[question_data.selected_answer_option])
+        elif question_data.type == "many_answers":
+            helper_1 = question_data.correct_answer_number.sort()
+            helper_2 = question_data.selected_answer_option.sort()
+            is_correct_answer = helper_1 == helper_2
+            answers = []
+            for s in question_data.selected_answer_option:
+                answers.append(question_data.answers[s])
+            #отправка результата в базу данных
+            BotDB.answer_question_result_update(question_data.response_id_in_the_database, id_of_the_test_results, is_correct_answer,question_data.question_id,answers)
+    #удаление текущего сообщения
+    asyncio.create_task(question_data.deleting_messages())
+    #переход на следующий или приведущий вопрос
+    if call.data == "next":
+        #проверка есть ли вопрос до в котором не вышло время
+        for i in reversed(list(range(0,question_number))):
+            if all_question_data[i] != 0:
+                question_number = i
+    else:
+        #проверка есть ли вопрос после в котором не вышло время
+        for i in reversed(list(range(question_number + 1,len_test))):
+            if all_question_data[i] != 0:
+                question_number = i
+    async with state.proxy() as data:
+        data["question_number"] = question_number
+    
+    await sending_a_message(call.message, state)
     
     
-    
-
-
+###################################################################################################################################
+async def text_response(message: types.Message, state: FSMContext):
+    pass
 
 
 def register_passing_the_test_v2(dp: Dispatcher):
@@ -289,7 +335,6 @@ def register_passing_the_test_v2(dp: Dispatcher):
     dp.register_message_handler(output_information_about_test, content_types = ['text'], state=test_status_v2.Q1)
     dp.register_callback_query_handler(creates_variable_with_a_test,lambda c: c.data == "start_test", state=test_status_v2.Q2)
     #dp.register_message_handler(text_response,content_types = ['text'], state=test_status_v2.Q3)
-    #dp.register_callback_query_handler(callbacks_next, lambda c: c.data == "next", state=test_status_v2.Q3)
-    #dp.register_callback_query_handler(callbacks_prev, lambda c: c.data == "prev", state=test_status_v2.Q3)
+    dp.register_callback_query_handler(callbacks_next_prev, lambda c: c.data == "next" or c.data == "prev", state=test_status_v2.Q3)
     #dp.register_callback_query_handler(callbacks_finish_the_test, lambda c: c.data == "prev", state=test_status_v2.Q3)
     #dp.register_callback_query_handler(callbacks, state=test_status_v2.Q3)
