@@ -334,7 +334,15 @@ class BotDB:
     def get_answer_test_right(self, fk_id):
         semaphore_begin()
         #получить количество правильных ответов
-        result = self.cursor.execute("SELECT answer id FROM test_answer WHERE (fk_id = ? AND right_answer = 1)",(fk_id,))
+        result = self.cursor.execute("SELECT answer,id FROM test_answer WHERE (fk_id = ? AND right_answer = 1)",(fk_id,))
+        r = result.fetchall()
+        semaphore_end()
+        return r
+    
+    def get_answer_test_right_v2(self, fk_id):
+        semaphore_begin()
+        #получить количество правильных ответов
+        result = self.cursor.execute("SELECT id FROM test_answer WHERE (fk_id = ? AND right_answer = 1)",(fk_id,))
         r = result.fetchall()
         semaphore_end()
         return r
