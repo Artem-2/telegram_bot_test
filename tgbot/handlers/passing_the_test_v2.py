@@ -79,7 +79,7 @@ class question_class(object):
         if self.question_number == 0:
             button_h_2 = types.InlineKeyboardButton("Далее", callback_data = "next")
             button.add(button_h_2)
-        elif self.question_number != 0 and self.question_number != len_test:
+        elif self.question_number != 0 and self.question_number != len_test-1:
             button_h_1 = types.InlineKeyboardButton("Назад", callback_data = "prev")
             button_h_2 = types.InlineKeyboardButton("Далее", callback_data = "next")
             button.row(button_h_1, button_h_2)
@@ -88,36 +88,42 @@ class question_class(object):
             button_h_2 = types.InlineKeyboardButton("Закончить тест", callback_data = "finish_the_test")
             button.row(button_h_1, button_h_2)
         button_h_1 = types.InlineKeyboardButton("Осталось времени: " + str(int(self.response_time)) + "c", callback_data = "None")
-        button_h_2 = types.InlineKeyboardButton(str(self.question_number) + "-й вопрос из " + str(len_test), callback_data = "None")
+        button_h_2 = types.InlineKeyboardButton(str(self.question_number + 1) + "-й вопрос из " + str(len_test), callback_data = "None")
         button.row(button_h_1, button_h_2)
         return button
     
     #удаление сообщений через определенное время
     async def deleting_messages_after_time_has_elapsed(self):
         await asyncio.sleep(self.response_time)
-        if self.message_id != None:
+        try:
             await self.message_id.delete()
             self.message_id = None
             self.response_time = 0
+        except:
+            pass
     
     #удаление сообщений 
     async def deleting_messages(self):
-        if self.message_id != None:
+        try:
             await self.message_id.delete()
             self.message_id = None
+        except:
+            pass
 
     #обновление времени в сообщения
-    async def updating_the_time_in_the_message(self, len_test, message):
+    async def updating_the_time_in_the_message(self, len_test):
         r_time = self.response_time
         time = datetime.datetime.now()
         while self.message_id != None:
             await asyncio.sleep(time_update)
             time2 = datetime.datetime.now() - time
             self.response_time = r_time - int(time2.seconds)
-            if self.message_id != None:
+            try:
                 button = self.button_create_time_and_auxiliary_buttons(len_test)
                 #изменение кнопок
                 await self.message_id.edit_reply_markup(reply_markup = button)
+            except:
+                pass
 
 
 
@@ -274,7 +280,7 @@ async def sending_a_message(message: types.Message, state: FSMContext):
     #запуск удаления сообщения
     asyncio.create_task(all_question_data[question_number].deleting_messages_after_time_has_elapsed())
     #запуск обновления таймера сообщения
-    asyncio.create_task(all_question_data[question_number].updating_the_time_in_the_message(len_test, message))
+    asyncio.create_task(all_question_data[question_number].updating_the_time_in_the_message(len_test))
     if all_question_data[question_number].type == "text":
         await test_status_v2.Q4.set()
     else:
@@ -307,21 +313,22 @@ async def callbacks_next_prev(call: types.CallbackQuery, state: FSMContext):
             #отправка результата в базу данных
             BotDB.answer_question_result_update(question_data.response_id_in_the_database, id_of_the_test_results, is_correct_answer,question_data.question_id,answers)
     #удаление текущего сообщения
-    asyncio.create_task(question_data.deleting_messages())
+    question_data.deleting_messages()
     #переход на следующий или приведущий вопрос
+    all_question_data[question_number] = question_data
     if call.data == "next":
         #проверка есть ли вопрос до в котором не вышло время
-        for i in reversed(list(range(0,question_number))):
+        for i in reversed(list(range(question_number + 1,len_test))):
             if all_question_data[i] != 0:
                 question_number = i
     else:
         #проверка есть ли вопрос после в котором не вышло время
-        for i in reversed(list(range(question_number + 1,len_test))):
+        for i in list(range(0,question_number)):
             if all_question_data[i] != 0:
                 question_number = i
     async with state.proxy() as data:
         data["question_number"] = question_number
-    
+        data["all_question_data"] = all_question_data
     await sending_a_message(call.message, state)
     
     
