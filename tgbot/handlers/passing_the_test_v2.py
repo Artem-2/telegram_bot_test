@@ -15,8 +15,6 @@ import random
 #ошибки 6000
 time_update = 5 #частота обновления таймера
 
-#проверка git
-
 #класс для переменной теста
 class question_class(object):
     def __init__(self):
@@ -95,12 +93,20 @@ class question_class(object):
         return button 
     
     #удаление сообщений через определенное время
-    async def deleting_messages_after_time_has_elapsed(self):
+    async def deleting_messages_after_time_has_elapsed(self, len_test, state: FSMContext, message: types.Message):
         await asyncio.sleep(self.response_time)
         try:
             await self.message_id.delete()
-            self.message_id = None
-            self.response_time = 0
+            async with state.proxy() as data:
+                all_question_data = data["all_question_data"]
+            #проверка есть ли вопрос после в котором не вышло время
+            for i in reversed(list(range(question_number + 1,len_test))):
+                if all_question_data[i].response_time != 0:
+                    question_number = i
+            async with state.proxy() as data:
+                data["question_number"] = question_number
+                data["all_question_data"].response_time = 0
+            await sending_a_message(message, state)
         except:
             pass
     
@@ -113,20 +119,41 @@ class question_class(object):
             pass
 
     #обновление времени в сообщения
-    async def updating_the_time_in_the_message(self, len_test):
+    async def updating_the_time_in_the_message(self, len_test, state: FSMContext):
+        
+        async with state.proxy() as data:
+            question_number = data["question_number"]
+
         r_time = self.response_time
         time = datetime.datetime.now()
-        while self.message_id != None:
-            await asyncio.sleep(time_update)
+        flag_exit = 1
+        helper = 0
+        while flag_exit != 0:
+            await asyncio.sleep(1)
+            async with state.proxy() as data:
+                question_number_helper = data["question_number"]
             time2 = datetime.datetime.now() - time
-            self.response_time = r_time - int(time2.seconds)
-            try:
-                button = self.button_create_time_and_auxiliary_buttons(len_test)
-                #изменение кнопок
-                await self.message_id.edit_reply_markup(reply_markup = button)
-            except:
-                pass
-
+            self.response_time = r_time - int(time2.total_seconds())
+            if int(time2.total_seconds()) // 5 > helper:
+                helper = int(time2.total_seconds()) // 5
+                try:
+                    if question_number_helper == question_number:
+                        button = self.button_create_time_and_auxiliary_buttons(len_test)
+                        #изменение кнопок
+                        await self.message_id.edit_reply_markup(reply_markup = button)
+                    else:
+                        flag_exit = 0
+                        async with state.proxy() as data:
+                            data["all_question_data"][question_number].response_time = self.response_time
+                except:
+                    flag_exit = 0
+                    async with state.proxy() as data:
+                        data["all_question_data"][question_number].response_time = self.response_time
+            else:
+                if question_number_helper != question_number:
+                    flag_exit = 0
+                    async with state.proxy() as data:
+                        data["all_question_data"][question_number].response_time = self.response_time
 
 
 
@@ -280,9 +307,9 @@ async def sending_a_message(message: types.Message, state: FSMContext):
     else:
         all_question_data[question_number].message_id = await message.answer(text = question_data.text_question, reply_markup = button)
     #запуск удаления сообщения
-    asyncio.create_task(all_question_data[question_number].deleting_messages_after_time_has_elapsed())
+    asyncio.create_task(all_question_data[question_number].deleting_messages_after_time_has_elapsed(len_test,state,message))
     #запуск обновления таймера сообщения
-    asyncio.create_task(all_question_data[question_number].updating_the_time_in_the_message(len_test))
+    asyncio.create_task(all_question_data[question_number].updating_the_time_in_the_message(len_test, state))
     if all_question_data[question_number].type == "text":
         await test_status_v2.Q4.set()
     else:
@@ -315,18 +342,18 @@ async def callbacks_next_prev(call: types.CallbackQuery, state: FSMContext):
             #отправка результата в базу данных
             BotDB.answer_question_result_update(question_data.response_id_in_the_database, id_of_the_test_results, is_correct_answer,question_data.question_id,answers)
     #удаление текущего сообщения
-    question_data.deleting_messages()
+    await question_data.deleting_messages()
     #переход на следующий или приведущий вопрос
     all_question_data[question_number] = question_data
     if call.data == "next":
         #проверка есть ли вопрос до в котором не вышло время
         for i in reversed(list(range(question_number + 1,len_test))):
-            if all_question_data[i] != 0:
+            if all_question_data[i].response_time != 0:
                 question_number = i
     else:
         #проверка есть ли вопрос после в котором не вышло время
         for i in list(range(0,question_number)):
-            if all_question_data[i] != 0:
+            if all_question_data[i].response_time != 0:
                 question_number = i
     async with state.proxy() as data:
         data["question_number"] = question_number
