@@ -15,6 +15,8 @@ import random
 #ошибки 6000
 time_update = 5 #частота обновления таймера
 
+#проверка git
+
 #класс для переменной теста
 class question_class(object):
     def __init__(self):
@@ -90,7 +92,7 @@ class question_class(object):
         button_h_1 = types.InlineKeyboardButton("Осталось времени: " + str(int(self.response_time)) + "c", callback_data = "None")
         button_h_2 = types.InlineKeyboardButton(str(self.question_number + 1) + "-й вопрос из " + str(len_test), callback_data = "None")
         button.row(button_h_1, button_h_2)
-        return button
+        return button 
     
     #удаление сообщений через определенное время
     async def deleting_messages_after_time_has_elapsed(self):
