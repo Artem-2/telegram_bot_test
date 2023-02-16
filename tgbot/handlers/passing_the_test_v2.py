@@ -10,7 +10,7 @@ from aiogram.utils.exceptions import (MessageCantBeDeleted, MessageToDeleteNotFo
 from aiogram.types import InlineKeyboardMarkup
 from tgbot.middlewares.DBhelp import BotDB
 from tgbot.misc.states import test_status_v2,all
-from tgbot.handlers.interface_all import interface_all_begin, interface_all_begin4
+from tgbot.handlers.interface_all import interface_all_begin, interface_all_begin2
 import random
 #ошибки 6000
 time_update = 5 #частота обновления таймера
@@ -38,7 +38,7 @@ class question_class(object):
         self.response_time = None
         #выбранный(е) вариант ответа
         self.selected_answer_option = None
-        #текстовый ответ на вопрос
+        #текстовый ответ на вопрос (текст ответа, id ответа)
         self.text_response = None
         #номер правильного ответа
         self.correct_answer_number = None
@@ -56,7 +56,7 @@ class question_class(object):
                 if self.selected_answer_option != None:
                     #проверка не выбран ли вариант ответа
                     if i in self.selected_answer_option:
-                        button_h = types.InlineKeyboardButton("[" + str(ord('a') + i) + "]", callback_data = str(i))
+                        button_h = types.InlineKeyboardButton("[" + chr(ord('a') + i) + "]", callback_data = str(i))
                     else:
                         button_h = types.InlineKeyboardButton(chr(ord('a') + i), callback_data = str(i))
                 else:
@@ -132,28 +132,31 @@ class question_class(object):
             await asyncio.sleep(1)
             async with state.proxy() as data:
                 question_number_helper = data["question_number"]
+                all_question_data = data["all_question_data"]
             time2 = datetime.datetime.now() - time
-            self.response_time = r_time - int(time2.total_seconds())
+            all_question_data[question_number].response_time = r_time - int(time2.total_seconds())
             if int(time2.total_seconds()) // 5 > helper:
                 helper = int(time2.total_seconds()) // 5
                 try:
                     if question_number_helper == question_number:
-                        button = self.button_create_time_and_auxiliary_buttons(len_test)
+                        button = all_question_data[question_number].button_create_time_and_auxiliary_buttons(len_test)
+                        async with state.proxy() as data:
+                            data["all_question_data"][question_number].response_time = all_question_data[question_number].response_time
                         #изменение кнопок
-                        await self.message_id.edit_reply_markup(reply_markup = button)
+                        await all_question_data[question_number].message_id.edit_reply_markup(reply_markup = button)
                     else:
                         flag_exit = 0
                         async with state.proxy() as data:
-                            data["all_question_data"][question_number].response_time = self.response_time
+                            data["all_question_data"][question_number].response_time = all_question_data[question_number].response_time
                 except:
                     flag_exit = 0
                     async with state.proxy() as data:
-                        data["all_question_data"][question_number].response_time = self.response_time
+                        data["all_question_data"][question_number].response_time = all_question_data[question_number].response_time
             else:
                 if question_number_helper != question_number:
                     flag_exit = 0
                     async with state.proxy() as data:
-                        data["all_question_data"][question_number].response_time = self.response_time
+                        data["all_question_data"][question_number].response_time = all_question_data[question_number].response_time
 
 
 
@@ -233,7 +236,6 @@ async def creates_variable_with_a_test(call: types.CallbackQuery, state: FSMCont
         user_id = data["user_id"]
     #добавление в базу данных начало прохождения теста
     id_of_the_test_results = BotDB.test_result_add(user_id,test_id)
-    print(id_of_the_test_results)
     #определение вопросов которые будут в тесте
     selected_questions = []
     if random_mode == 1:
@@ -346,12 +348,12 @@ async def callbacks_next_prev(call: types.CallbackQuery, state: FSMContext):
     #переход на следующий или приведущий вопрос
     all_question_data[question_number] = question_data
     if call.data == "next":
-        #проверка есть ли вопрос до в котором не вышло время
+        #проверка есть ли вопрос после в котором не вышло время
         for i in reversed(list(range(question_number + 1,len_test))):
             if all_question_data[i].response_time != 0:
                 question_number = i
     else:
-        #проверка есть ли вопрос после в котором не вышло время
+        #проверка есть ли вопрос до в котором не вышло время
         for i in list(range(0,question_number)):
             if all_question_data[i].response_time != 0:
                 question_number = i
@@ -363,14 +365,109 @@ async def callbacks_next_prev(call: types.CallbackQuery, state: FSMContext):
     
 ###################################################################################################################################
 async def text_response(message: types.Message, state: FSMContext):
-    pass
+    async with state.proxy() as data:
+        all_question_data = data["all_question_data"]
+        question_number = data["question_number"]
+        len_test = data["len_test"]
+        id_of_the_test_results = data["id_of_the_test_results"]
+    question_data = all_question_data[question_number]
+    #занесение в бд
+    if question_data.text_response == None:
+        id_answer = BotDB.answer_question_result_text_response(id_of_the_test_results, question_data.question_id, message.text)
+        await question_data.deleting_messages()
+    else:
+        BotDB.answer_question_result_text_response_update(question_data.text_response[1], message.text)
+        await question_data.deleting_messages()
+    #переход на следующий вопрос
+    for i in reversed(list(range(question_number + 1,len_test))):
+        if all_question_data[i].response_time != 0:
+            question_number_next = i
+    async with state.proxy() as data:
+        data["question_number"] = question_number_next
+        data["all_question_data"][question_number].text_response = [message.text, id_answer]
+    await sending_a_message(message, state)
 
+###################################################################################################################################
+async def callbacks_finish_the_test(call: types.CallbackQuery, state: FSMContext):
+    async with state.proxy() as data:
+        id_of_the_test_results = data["id_of_the_test_results"]
+        test_id = data["test_id"]
+    results = BotDB.get_question_result(id_of_the_test_results)
+    mark = BotDB.get_test_mark(test_id)
+    sum = 0
+    cost = 0
+    mark1 = 0
+    if mark[1] == 0 and mark[0] == 0 and mark[2] == 0:
+        await call.message.answer("Тест пройден")
+        BotDB.test_result_add_result("Тест пройден", id_of_the_test_results, "None")
+    elif mark[1] == 0 and mark[0] == 0 and mark[2] != 0:
+        for r in results:
+            if r[0] != None:
+                sum = sum + r[0]
+                cost = cost + 1
+        await call.message.answer(str(sum)+" правильных ответов из "+str(cost))
+        if int(mark[2]) <= sum:
+            await call.message.answer("Тест сдан")
+            BotDB.test_result_add_result(str(sum)+"/"+str(cost), id_of_the_test_results, "Тест сдан")
+        else:
+            await call.message.answer("Тест не сдан")
+            BotDB.test_result_add_result(str(sum)+"/"+str(cost), id_of_the_test_results, "Тест не сдан")
+    else:
+        for r in results:
+            if r[0] != None:
+                sum = sum + r[0]
+                cost = cost + 1
+        if int(mark[2]) <= sum:
+            mark1 = 5
+        elif int(mark[1]) <= sum:
+            mark1 = 4
+        elif int(mark[0]) <= sum:
+            mark1 = 3
+        else:
+            mark1 = 2
+        await call.message.answer(str(sum)+" правильных ответов из "+str(cost))
+        await call.message.answer("Оценка: "+str(mark1))
+        BotDB.test_result_add_result(str(sum)+"/"+str(cost), id_of_the_test_results, mark1)
+    await state.finish()
+    await interface_all_begin2(call, state)
+
+
+###################################################################################################################################
+async def callbacks(call: types.CallbackQuery, state: FSMContext):
+    flag = 0
+    flag_answers = False
+    try:
+        call_data = int(call.data)
+    except:
+        flag = 1
+    if flag == 0:
+        async with state.proxy() as data:
+            all_question_data = data["all_question_data"]
+            question_number = data["question_number"]
+            len_test = data["len_test"]
+        question_data = all_question_data[question_number]
+        if question_data.type == "one_answer":
+            if question_data.selected_answer_option != [call_data]:
+                question_data.selected_answer_option = [call_data]
+                flag_answers = True
+        else:
+            if not(question_data.selected_answer_option in call_data):
+                question_data.selected_answer_option.append(call_data)
+                question_data.selected_answer_option.sort()
+                flag_answers = True
+        if flag_answers:
+            question_data.button_create()
+            button = question_data.button_create_time_and_auxiliary_buttons(len_test)
+            await question_data.message_id.edit_reply_markup(reply_markup = button)
+            async with state.proxy() as data:
+                data["all_question_data"][question_number].button = question_data.button
+                data["all_question_data"][question_number].selected_answer_option = question_data.selected_answer_option
 
 def register_passing_the_test_v2(dp: Dispatcher):
     dp.register_callback_query_handler(code_request, lambda c: c.data == "passing_the_test_v2", state=all.interface_all_stateQ1)
     dp.register_message_handler(output_information_about_test, content_types = ['text'], state=test_status_v2.Q1)
     dp.register_callback_query_handler(creates_variable_with_a_test,lambda c: c.data == "start_test", state=test_status_v2.Q2)
-    #dp.register_message_handler(text_response,content_types = ['text'], state=test_status_v2.Q3)
+    dp.register_message_handler(text_response,content_types = ['text'], state=test_status_v2.Q4)
+    dp.register_callback_query_handler(callbacks_finish_the_test, lambda c: c.data == "finish_the_test", state=test_status_v2.Q3)
     dp.register_callback_query_handler(callbacks_next_prev, lambda c: c.data == "next" or c.data == "prev", state=test_status_v2.Q3)
-    #dp.register_callback_query_handler(callbacks_finish_the_test, lambda c: c.data == "prev", state=test_status_v2.Q3)
-    #dp.register_callback_query_handler(callbacks, state=test_status_v2.Q3)
+    dp.register_callback_query_handler(callbacks, state=test_status_v2.Q3)
