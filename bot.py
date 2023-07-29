@@ -19,7 +19,7 @@ from tgbot.handlers.passing_the_test import register_passing_the_test
 from tgbot.handlers.passing_the_test_v2 import register_passing_the_test_v2
 from tgbot.handlers.interface_all import register_interface_all
 from tgbot.handlers.registration_teachers import register_registration_teachers
-#from tgbot.middlewares.DBhelp import DbMiddleware 
+#from tgbot.middlewares.DBhelp import DbMiddleware #
 
 
 
