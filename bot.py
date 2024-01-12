@@ -1,56 +1,20 @@
 import asyncio
 import logging 
 
-from tgbot.config import bot 
-from tgbot.config import dp
-from tgbot.config import config2
-from tgbot.filters.admin import AdminFilter
-from tgbot.handlers.rename import register_user_rename
-from tgbot.handlers.test_create import register_test_create
-from tgbot.handlers.test_del import register_test_del
-from tgbot.handlers.registration import register_Registration
-from tgbot.handlers.pictures import register_pictures
-from tgbot.handlers.pictures_del import register_pictures_del
-from tgbot.handlers.get_test_result_admin import register_get_test_result_admin
-from tgbot.handlers.get_test_result import register_get_test_result
-from tgbot.handlers.get_test_result_one_day import register_get_test_result_one_day
-from tgbot.handlers.activete_deactivete import register_activete
-from tgbot.handlers.passing_the_test import register_passing_the_test
-from tgbot.handlers.passing_the_test_v2 import register_passing_the_test_v2
-from tgbot.handlers.interface_all import register_interface_all
-from tgbot.handlers.registration_teachers import register_registration_teachers
-#from tgbot.middlewares.DBhelp import DbMiddleware #
+from tgbot.handlers import interface_all
 
+from aiogram import Bot, Dispatcher
+from aiogram.fsm.storage.memory import MemoryStorage
+from aiogram.fsm.strategy import FSMStrategy
+from aiogram.client.session.aiohttp import AiohttpSession
+
+from tgbot.config import config
 
 
 
 logger = logging.getLogger(__name__)
 
 
-def register_all_middlewares(dp):
-    pass
-    #dp.setup_middleware(DbMiddleware())
-
-
-def register_all_filters(dp):
-    dp.filters_factory.bind(AdminFilter)
-
-
-def register_all_handlers(dp):
-    register_registration_teachers(dp)
-    register_user_rename(dp)
-    register_pictures(dp)
-    register_test_create(dp)
-    register_Registration(dp)
-    register_passing_the_test(dp)
-    register_passing_the_test_v2(dp)
-    register_interface_all(dp)
-    register_get_test_result_admin(dp)
-    register_get_test_result(dp)
-    register_get_test_result_one_day(dp)
-    register_test_del(dp)
-    register_activete(dp)
-    register_pictures_del(dp)
 
 
 async def main():
@@ -60,21 +24,26 @@ async def main():
     )
     logger.info("Starting bot")
 
-    register_all_middlewares(dp)
-    register_all_filters(dp)
-    register_all_handlers(dp)
+    
+    storage = MemoryStorage()
+    session = AiohttpSession(proxy=config.tg_bot.proxy)
+    bot = Bot(token=config.tg_bot.token, session=session, parse_mode='HTML')
+    dp = Dispatcher(storage=storage, fsm_strategy=FSMStrategy.GLOBAL_USER)
+    dp.include_routers(interface_all.router)
+
 
     try:
-        for c in config2.tg_bot.admin_ids:
+        for c in config.tg_bot.admin_ids:
             await bot.send_message(c,'Бот запущен')
     except:
         print("Неверный id админа \n")
     # Start
     try:
-        await dp.start_polling()
+        await bot.delete_webhook(drop_pending_updates=True)
+        await dp.start_polling(bot)
     finally:
         try:
-            for c in config2.tg_bot.admin_ids:
+            for c in config.tg_bot.admin_ids:
                 await bot.send_message(c,'Бот отключен')
         except:
             pass

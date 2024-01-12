@@ -1,5 +1,5 @@
 import sqlite3 
-from tgbot.config import config2
+from tgbot.config import config
 #доделать создание преподавателя admina
 
 semaphore = 0
@@ -119,7 +119,7 @@ class BotDB:
                     answer       STRING,
                     right_answer BOOLEAN NOT NULL
                 );""")
-            for c in config2.tg_bot.admin_ids:
+            for c in config.tg_bot.admin_ids:
                 self.cursor.execute("INSERT INTO 'teachers' ('name','user_id') VALUES (?, ?)",("Admin", c))
             self.conn.commit()
 #######################################################################
