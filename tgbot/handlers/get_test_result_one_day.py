@@ -1,33 +1,36 @@
-from aiogram import Dispatcher, types
-from aiogram.dispatcher import FSMContext
+from aiogram import types
+from aiogram.fsm.context import FSMContext
+from aiogram import Router, F
 import asyncio
 import datetime
-from aiogram.types import InlineKeyboardMarkup
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 from tgbot.middlewares.DBhelp import BotDB
 from tgbot.misc.states import all
-from tgbot.handlers.interface_all import interface_all_begin2
 #ошибки 4000
     
     
 
+router = Router()
 
+@router.callback_query(F.data == "get_test_result_one_day", all.interface_all_stateQ1)
 async def get_test_result_one_day(call: types.CallbackQuery, state: FSMContext):
     try:
         Title_Test_code = BotDB.get_test_title_test_code_no_active_mode(call.from_user.id)
-        button =  InlineKeyboardMarkup()
+        keyboard =  InlineKeyboardBuilder()
         all1 = "Тесты, данные о которых вы можете получить\n"
         for a in Title_Test_code:
             all1 = all1 + "\n" + "Код теста: " + a[1] + "\n" + "Название теста: " + a[0]
-            button_h = types.InlineKeyboardButton((a[1]), callback_data = a[1])
-            button.add(button_h)
-        button_h = types.InlineKeyboardButton(("Отмена"), callback_data = "start")
-        button.add(button_h)
-        await call.message.answer(all1, reply_markup = button)
-        await all.register_get_test_result_one_dayQ1.set()
+            button_h = types.InlineKeyboardButton(text = a[1], callback_data = a[1])
+            keyboard.row(button_h)
+        button_h = types.InlineKeyboardButton(text = "Отмена", callback_data = "start")
+        keyboard.row(button_h)
+        await call.message.answer(all1, reply_markup = keyboard.as_markup())
+        await state.set_state(state=all.register_get_test_result_one_dayQ1)
     except:
         await call.message.answer("Произошла ошибка 4001")
-        await state.finish()
+        await state.clear()
 
+@router.callback_query(all.register_get_test_result_one_dayQ1)
 async def get_test_result_one_day2(call: types.CallbackQuery, state: FSMContext):
     try:
         flag = 0
@@ -41,7 +44,6 @@ async def get_test_result_one_day2(call: types.CallbackQuery, state: FSMContext)
             test_id = BotDB.get_test_user_create_id(int(call.from_user.id), str(call.data))
             res = BotDB.get_test_result_all(test_id[0][0])
             data_2 = datetime.datetime.now()
-            message_id_all = []
             for r in res:
                 data = datetime.datetime.strptime(r[3], '%Y-%m-%d %H:%M:%S')
                 data_3 = data_2 - data
@@ -56,24 +58,25 @@ async def get_test_result_one_day2(call: types.CallbackQuery, state: FSMContext)
                         text = text + "Оценка: " + str(r[2])
                     else:
                         text = text + "В данный момент проходит тест"
-                    button =  InlineKeyboardMarkup()
+                    keyboard =  InlineKeyboardBuilder()
                     button_h = types.InlineKeyboardButton(text="Удалить", callback_data=str(r[4]))
-                    button.add(button_h)
-                    message_id = await call.message.answer(text, reply_markup = button)
+                    keyboard.row(button_h)
+                    message_id = await call.message.answer(text, reply_markup = keyboard.as_markup())
                     async with state.proxy() as data:
                         data[str(r[4])] = message_id
-            button =  InlineKeyboardMarkup()
+            keyboard =  InlineKeyboardBuilder()
             button_h = types.InlineKeyboardButton(text="Назад", callback_data="start")
-            button.add(button_h)
-            await call.message.answer("Выберите вариант", reply_markup = button)
-            await all.register_get_test_result_one_dayQ2.set()
+            keyboard.row(button_h)
+            await call.message.answer("Выберите вариант", reply_markup = keyboard.as_markup())
+            await state.set_state(state=all.register_get_test_result_one_dayQ2)
         else:
             pass
     except:
         await call.message.answer("Произошла ошибка 4002")
-        await state.finish()
+        await state.clear()
 
     
+@router.callback_query(all.register_get_test_result_one_dayQ2)
 async def get_test_result_one_day3(call: types.CallbackQuery, state: FSMContext):
     try:
         async with state.proxy() as data:
@@ -96,11 +99,4 @@ async def get_test_result_one_day3(call: types.CallbackQuery, state: FSMContext)
             pass
     except:
         await call.message.answer("Произошла ошибка 4003")
-        await state.finish()
-
-
-
-def register_get_test_result_one_day(dp: Dispatcher):
-    dp.register_callback_query_handler(get_test_result_one_day, lambda c: c.data == "get_test_result_one_day", state=all.interface_all_stateQ1)
-    dp.register_callback_query_handler(get_test_result_one_day2, state=all.register_get_test_result_one_dayQ1)
-    dp.register_callback_query_handler(get_test_result_one_day3, state=all.register_get_test_result_one_dayQ2)
+        await state.clear()

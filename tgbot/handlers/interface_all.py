@@ -1,5 +1,5 @@
 from aiogram.fsm.context import FSMContext
-from aiogram import Dispatcher, types
+from aiogram import types
 from tgbot.misc.states import all, test_status, rename_state, reg_us
 from aiogram.fsm.state import default_state
 from tgbot.middlewares.DBhelp import BotDB
@@ -10,7 +10,9 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from tgbot.filters.admin import AdminFilter
 #ошибки 5000
-number_of_changes_rename = 1  #количесто попыток изменения имени
+
+from tgbot.config import config
+number_of_changes_rename = config.tg_bot.number_of_changes_rename  #количесто попыток изменения имени
 
 
 all2 = all,default_state,test_status.Q1,test_status.Q2,rename_state.Q1,rename_state.Q2,reg_us.Q1
@@ -52,31 +54,31 @@ async def interface_all_test_create_admin(message: types.Message, state: FSMCont
 async def interface_all_begin_def(message_id, message: types.Message, state: FSMContext):
     try:
         await state.clear()
-        button =  InlineKeyboardBuilder()
+        keyboard =  InlineKeyboardBuilder()
         if BotDB.get_teachers_name(message_id) != None:
             button_h = types.InlineKeyboardButton(text="Пройти тест", callback_data="test")
-            button.row(button_h)
+            keyboard.row(button_h)
             button_h = types.InlineKeyboardButton(text="Управление тестом", callback_data="create")
-            button.row(button_h)
+            keyboard.row(button_h)
             button_h = types.InlineKeyboardButton(text="Добавить преподавателя", callback_data="registration_teachers")
-            button.row(button_h)
+            keyboard.row(button_h)
             await state.set_state(state=all.interface_all_stateBegin)
-            await message.answer("Выберите вариант",reply_markup = button.as_markup())
+            await message.answer("Выберите вариант",reply_markup = keyboard.as_markup())
         else:
             if BotDB.user_exists(message_id) != None:
                 button_h = types.InlineKeyboardButton(text="Начать тест", callback_data="passing_the_test")
-                button.row(button_h)
+                keyboard.row(button_h)
                 button_h = types.InlineKeyboardButton(text="Начать тест v2", callback_data="passing_the_test_v2")
-                button.row(button_h)
+                keyboard.row(button_h)
                 num = BotDB.get_test_user_rename_number_of_changes(message_id)
                 if num[0] < number_of_changes_rename:
                     button_h = types.InlineKeyboardButton(text="Изменить имя", callback_data="rename")
-                    button.row(button_h)
-                await message.answer("Выберите вариант",reply_markup = button.as_markup())
+                    keyboard.row(button_h)
+                await message.answer("Выберите вариант",reply_markup = keyboard.as_markup())
             else:
                 button_h = types.InlineKeyboardButton(text="Регистрация", callback_data="registration")
-                button.row(button_h) 
-                await message.answer("Необходимо пройти регистрацию",reply_markup = button.as_markup())
+                keyboard.row(button_h) 
+                await message.answer("Необходимо пройти регистрацию",reply_markup = keyboard.as_markup())
             await state.set_state(state=all.interface_all_stateQ1)
     except:
         await message.answer("Произошла ошибка 5001")
@@ -129,55 +131,55 @@ async def interface_all_begin3(message: types.Message, state: FSMContext):
 async def interface_all_begin4(call: types.CallbackQuery, state: FSMContext):
     await interface_all_begin_def(call.chat.id, call, state)
 ####################################################################################################################################################
-@router.message(F.data == "test", all.interface_all_stateBegin)    
+@router.callback_query(F.data == "test", all.interface_all_stateBegin)    
 async def interface_all_passing_the_test(call: types.CallbackQuery, state: FSMContext):
     try:
-        button =  InlineKeyboardBuilder()
+        keyboard =  InlineKeyboardBuilder()
         if BotDB.user_exists(call.from_user.id) != None:
             button_h = types.InlineKeyboardButton(text="Начать тест", callback_data="passing_the_test")
-            button.row(button_h)
+            keyboard.row(button_h)
             button_h = types.InlineKeyboardButton(text="Начать тест v2", callback_data="passing_the_test_v2")
-            button.row(button_h)
+            keyboard.row(button_h)
             num = BotDB.get_test_user_rename_number_of_changes(call.from_user.id)
             if num[0] < number_of_changes_rename:
                 button_h = types.InlineKeyboardButton(text="Изменить имя", callback_data="rename")
-                button.row(button_h)
+                keyboard.row(button_h)
         else:
             button_h = types.InlineKeyboardButton(text="Регистрация", callback_data="registration")
-            button.row(button_h)
+            keyboard.row(button_h)
         button_h = types.InlineKeyboardButton(text="Назад", callback_data="start")
-        button.row(button_h)
-        await call.message.answer("Выберите вариант",reply_markup = button.as_markup()).clear()
+        keyboard.row(button_h)
+        await call.message.answer("Выберите вариант",reply_markup = keyboard.as_markup())
         await state.set_state(state=all.interface_all_stateQ1)
     except:
         await call.message.answer("Произошла ошибка 5002")
         await state.clear()
 ####################################################################################################################################################
-@router.message(F.data == "create", all.interface_all_stateBegin)    
+@router.callback_query(F.data == "create", all.interface_all_stateBegin)    
 async def interface_all_test_create(call: types.CallbackQuery, state: FSMContext):
     try:
-        button =  InlineKeyboardBuilder()
+        keyboard =  InlineKeyboardBuilder()
         button_h = types.InlineKeyboardButton(text="Создать тест", callback_data="test_create")
-        button.row(button_h)
+        keyboard.row(button_h)
         button_h = types.InlineKeyboardButton(text="Добавить картинку", callback_data="pictures")
-        button.row(button_h)
+        keyboard.row(button_h)
         button_h = types.InlineKeyboardButton(text="Удалить картинку", callback_data="pictures_del")
-        button.row(button_h)
+        keyboard.row(button_h)
         button_h = types.InlineKeyboardButton(text="Помощь в создании теста", callback_data="test_create_help")
-        button.row(button_h)
+        keyboard.row(button_h)
         button_h = types.InlineKeyboardButton(text="Активировать тест", callback_data="activete")
-        button.row(button_h)
+        keyboard.row(button_h)
         button_h = types.InlineKeyboardButton(text="Отключить тест", callback_data="deactivete")
-        button.row(button_h)
+        keyboard.row(button_h)
         button_h = types.InlineKeyboardButton(text="Результаты теста", callback_data="get_test_result")
-        button.row(button_h)
+        keyboard.row(button_h)
         button_h = types.InlineKeyboardButton(text="Результаты теста за 1 день", callback_data="get_test_result_one_day")
-        button.row(button_h)
+        keyboard.row(button_h)
         button_h = types.InlineKeyboardButton(text="Удалить тест", callback_data="test_del")
-        button.row(button_h)
+        keyboard.row(button_h)
         button_h = types.InlineKeyboardButton(text="Назад", callback_data="start")
-        button.row(button_h)
-        await call.message.answer("Выберите вариант",reply_markup = button.as_markup())
+        keyboard.row(button_h)
+        await call.message.answer("Выберите вариант",reply_markup = keyboard.as_markup())
         await state.set_state(state=all.interface_all_stateQ1)
     except:
         await call.message.answer("Произошла ошибка 5003")

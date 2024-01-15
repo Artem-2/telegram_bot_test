@@ -13,6 +13,7 @@ class TgBot:
     token: str
     admin_ids: List[int]
     proxy: str
+    number_of_changes_rename: int
 
 
 @dataclass
@@ -36,6 +37,7 @@ def load_config(path: str = None):
             token=env.str("BOT_TOKEN"),
             admin_ids=list(map(int, env.list("ADMINS"))),
             proxy=env.str("PROXY"),
+            number_of_changes_rename=env.str("number_of_changes_rename"),
         ),
         db=DbConfig(
         ),

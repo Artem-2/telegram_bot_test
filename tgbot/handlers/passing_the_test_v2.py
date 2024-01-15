@@ -2,12 +2,10 @@ import os.path
 import datetime
 import asyncio
 import copy
-from aiogram.utils.exceptions import MessageNotModified
-from contextlib import suppress
 from aiogram import Dispatcher, types
-from aiogram.dispatcher import FSMContext
-from aiogram.utils.exceptions import (MessageCantBeDeleted, MessageToDeleteNotFound, )
-from aiogram.types import InlineKeyboardMarkup
+from aiogram.fsm.context import FSMContext
+from aiogram.utils.keyboard import InlineKeyboardBuilder
+from aiogram import Router, F
 from tgbot.middlewares.DBhelp import BotDB
 from tgbot.misc.states import test_status_v2,all
 from tgbot.handlers.interface_all import interface_all_begin, interface_all_begin2
@@ -15,6 +13,7 @@ import random
 #ошибки 6000
 time_update = 5 #частота обновления таймера
 
+router = Router()
 #класс для переменной теста
 class question_class(object):
     def __init__(self):
@@ -29,7 +28,7 @@ class question_class(object):
         #текст вопроса
         self.text_question = None
         #переменная с кнопками
-        self.button = None
+        self.keyboard = None
         #код фото
         self.photo = None
         #все варианты ответа (текст ответа, правильный ли ответ, id ответа)
@@ -49,18 +48,18 @@ class question_class(object):
     def button_create(self):
         if self.answers != None:
             i = 0
-            self.button =  InlineKeyboardMarkup()
+            self.keyboard =  InlineKeyboardBuilder()
             for answer in random.sample(self.answers,len(self.answers)):
                 self.text_question = self.text_question + "\n" + chr(ord('a') + i) + ") " + str(answer[0])
 
                 if self.selected_answer_option != None:
                     #проверка не выбран ли вариант ответа
                     if i in self.selected_answer_option:
-                        button_h = types.InlineKeyboardButton("[" + chr(ord('a') + i) + "]", callback_data = str(i))
+                        button_h = types.InlineKeyboardButton(text = "[" + chr(ord('a') + i) + "]", callback_data = str(i))
                     else:
-                        button_h = types.InlineKeyboardButton(chr(ord('a') + i), callback_data = str(i))
+                        button_h = types.InlineKeyboardButton(text = chr(ord('a') + i), callback_data = str(i))
                 else:
-                    button_h = types.InlineKeyboardButton(chr(ord('a') + i), callback_data = str(i))
+                    button_h = types.InlineKeyboardButton(text = chr(ord('a') + i), callback_data = str(i))
                 if self.type == "one_answer":
                     if answer[1] == 1:
                         self.correct_answer_number = i
@@ -71,26 +70,26 @@ class question_class(object):
                         else:
                             self.correct_answer_number = [i]
                 i = i+1
-                self.button.add(button_h)
+                self.keyboard.row(button_h)
     
     #создание кнопок времмени и перехода на следующий или приведущий вопрос
     def button_create_time_and_auxiliary_buttons(self, len_test):
-        button = copy.deepcopy(self.button)
+        keyboard = copy.deepcopy(self.button)
         if self.question_number == 0:
-            button_h_2 = types.InlineKeyboardButton("Далее", callback_data = "next")
-            button.add(button_h_2)
+            button_h_2 = types.InlineKeyboardButton(text = "Далее", callback_data = "next")
+            keyboard.row(button_h_2)
         elif self.question_number != 0 and self.question_number != len_test-1:
-            button_h_1 = types.InlineKeyboardButton("Назад", callback_data = "prev")
-            button_h_2 = types.InlineKeyboardButton("Далее", callback_data = "next")
-            button.row(button_h_1, button_h_2)
+            button_h_1 = types.InlineKeyboardButton(text = "Назад", callback_data = "prev")
+            button_h_2 = types.InlineKeyboardButton(text = "Далее", callback_data = "next")
+            keyboard.row(button_h_1, button_h_2)
         else:
-            button_h_1 = types.InlineKeyboardButton("Назад", callback_data = "prev")
-            button_h_2 = types.InlineKeyboardButton("Закончить тест", callback_data = "finish_the_test")
-            button.row(button_h_1, button_h_2)
-        button_h_1 = types.InlineKeyboardButton("Осталось времени: " + str(int(self.response_time)) + "c", callback_data = "None")
-        button_h_2 = types.InlineKeyboardButton(str(self.question_number + 1) + "-й вопрос из " + str(len_test), callback_data = "None")
-        button.row(button_h_1, button_h_2)
-        return button 
+            button_h_1 = types.InlineKeyboardButton(text = "Назад", callback_data = "prev")
+            button_h_2 = types.InlineKeyboardButton(text = "Закончить тест", callback_data = "finish_the_test")
+            keyboard.row(button_h_1, button_h_2)
+        button_h_1 = types.InlineKeyboardButton(text = "Осталось времени: " + str(int(self.response_time)) + "c", callback_data = "None")
+        button_h_2 = types.InlineKeyboardButton(text = str(self.question_number + 1) + "-й вопрос из " + str(len_test), callback_data = "None")
+        keyboard.row(button_h_1, button_h_2)
+        return keyboard 
     
     #удаление сообщений через определенное время
     async def deleting_messages_after_time_has_elapsed(self, len_test, state: FSMContext, message: types.Message):
@@ -139,11 +138,11 @@ class question_class(object):
                 helper = int(time2.total_seconds()) // 5
                 try:
                     if question_number_helper == question_number:
-                        button = all_question_data[question_number].button_create_time_and_auxiliary_buttons(len_test)
+                        keyboard = all_question_data[question_number].button_create_time_and_auxiliary_buttons(len_test)
                         async with state.proxy() as data:
                             data["all_question_data"][question_number].response_time = all_question_data[question_number].response_time
                         #изменение кнопок
-                        await all_question_data[question_number].message_id.edit_reply_markup(reply_markup = button)
+                        await all_question_data[question_number].message_id.edit_reply_markup(reply_markup = keyboard.as_markup())
                     else:
                         flag_exit = 0
                         async with state.proxy() as data:
@@ -162,15 +161,17 @@ class question_class(object):
 
 ###################################################################################################################################
 #начальная функция запрашивает код теста
+@router.callback_query(F.data == "passing_the_test_v2", all.interface_all_stateQ1)
 async def code_request(call: types.CallbackQuery, state: FSMContext):
-    button =  InlineKeyboardMarkup()
+    keyboard =  InlineKeyboardBuilder()
     button_h = types.InlineKeyboardButton(("Отмена"), callback_data = "start")
-    button.add(button_h)
-    await call.message.answer("Введите код теста", reply_markup = button)
-    await test_status_v2.Q1.set()
+    keyboard.row(button_h)
+    await call.message.answer("Введите код теста", reply_markup = keyboard.as_markup())
+    await state.set_state(state=test_status_v2.Q1)
     
 ###################################################################################################################################
 #в данной функции выводится основная информация о тесте и выдает запрос на начало теста
+@router.message(F.text, test_status_v2.Q1)
 async def output_information_about_test(message: types.Message, state: FSMContext):
     #проверка существования теста
     code = BotDB.get_test(message.text)
@@ -202,29 +203,30 @@ async def output_information_about_test(message: types.Message, state: FSMContex
                     data["random_mode"] = random_mode
                     data["len_test"] = len_test
                 #создание клавиатуры для начала тестирования
-                button =  InlineKeyboardMarkup()
+                keyboard =  InlineKeyboardBuilder()
                 button_h = types.InlineKeyboardButton(text="Начать тестирование", callback_data="start_test")
-                button.add(button_h)
+                keyboard.row(button_h)
                 button_h = types.InlineKeyboardButton(text="Назад", callback_data="start")
-                button.add(button_h)
-                await message.answer("Выберите вариант",reply_markup = button)
+                keyboard.row(button_h)
+                await message.answer("Выберите вариант",reply_markup = keyboard.as_markup())
                 #изменение состояния
-                await test_status_v2.Q2.set()
+                await state.set_state(state=test_status_v2.Q2)
             else:
                 await message.answer("Вы уже проходили данный тест")
-                await state.finish()
+                await state.clear()
                 await interface_all_begin(message, state)
         else:
             await message.answer("Тест не активен")
-            await state.finish()
+            await state.clear()
             await interface_all_begin(message, state)
     else:
         await message.answer("Данного теста не существует")
-        await state.finish()
+        await state.clear()
         await interface_all_begin(message, state)
 
 ###################################################################################################################################
 #создает переменную с тестом
+@router.callback_query(F.data == "start_test", test_status_v2.Q2)
 async def creates_variable_with_a_test(call: types.CallbackQuery, state: FSMContext):
     #получение всех необходимых данных из машины состояний
     async with state.proxy() as data:
@@ -302,24 +304,26 @@ async def sending_a_message(message: types.Message, state: FSMContext):
     #выбор необходимого вопроса
     question_data = all_question_data[question_number]
     #создание кнопопк
-    button = question_data.button_create_time_and_auxiliary_buttons(len_test)
+    keyboard = question_data.button_create_time_and_auxiliary_buttons(len_test)
     #отправка сообщения
     if question_data.photo != None:
-        all_question_data[question_number].message_id = await message.answer_photo(question_data.photo, caption = question_data.text_question, reply_markup = button)
+        all_question_data[question_number].message_id = await message.answer_photo(question_data.photo, caption = question_data.text_question, reply_markup = keyboard.as_markup())
     else:
-        all_question_data[question_number].message_id = await message.answer(text = question_data.text_question, reply_markup = button)
+        all_question_data[question_number].message_id = await message.answer(text = question_data.text_question, reply_markup = keyboard.as_markup())
     #запуск удаления сообщения
     asyncio.create_task(all_question_data[question_number].deleting_messages_after_time_has_elapsed(len_test,state,message))
     #запуск обновления таймера сообщения
     asyncio.create_task(all_question_data[question_number].updating_the_time_in_the_message(len_test, state))
     if all_question_data[question_number].type == "text":
-        await test_status_v2.Q4.set()
+        await state.set_state(state=test_status_v2.Q4)
     else:
-        await test_status_v2.Q3.set()
+        await state.set_state(state=test_status_v2.Q3)
     async with state.proxy() as data:
         data["all_question_data"] = all_question_data
 
 ###################################################################################################################################
+@router.callback_query(F.data == "next", test_status_v2.Q3)
+@router.callback_query(F.data == "prev", test_status_v2.Q3)
 async def callbacks_next_prev(call: types.CallbackQuery, state: FSMContext):
     async with state.proxy() as data:
         id_of_the_test_results = data["id_of_the_test_results"]
@@ -364,6 +368,7 @@ async def callbacks_next_prev(call: types.CallbackQuery, state: FSMContext):
     
     
 ###################################################################################################################################
+@router.message(F.text, test_status_v2.Q4)
 async def text_response(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         all_question_data = data["all_question_data"]
@@ -388,6 +393,7 @@ async def text_response(message: types.Message, state: FSMContext):
     await sending_a_message(message, state)
 
 ###################################################################################################################################
+@router.callback_query(F.data == "finish_the_test", test_status_v2.Q3)
 async def callbacks_finish_the_test(call: types.CallbackQuery, state: FSMContext):
     async with state.proxy() as data:
         id_of_the_test_results = data["id_of_the_test_results"]
@@ -428,11 +434,12 @@ async def callbacks_finish_the_test(call: types.CallbackQuery, state: FSMContext
         await call.message.answer(str(sum)+" правильных ответов из "+str(cost))
         await call.message.answer("Оценка: "+str(mark1))
         BotDB.test_result_add_result(str(sum)+"/"+str(cost), id_of_the_test_results, mark1)
-    await state.finish()
+    await state.clear()
     await interface_all_begin2(call, state)
 
 
 ###################################################################################################################################
+@router.callback_query(test_status_v2.Q3)
 async def callbacks(call: types.CallbackQuery, state: FSMContext):
     flag = 0
     flag_answers = False
@@ -457,17 +464,11 @@ async def callbacks(call: types.CallbackQuery, state: FSMContext):
                 flag_answers = True
         if flag_answers:
             question_data.button_create()
-            button = question_data.button_create_time_and_auxiliary_buttons(len_test)
-            await question_data.message_id.edit_reply_markup(reply_markup = button)
+            keyboard = question_data.button_create_time_and_auxiliary_buttons(len_test)
+            await question_data.message_id.edit_reply_markup(reply_markup = keyboard.as_markup())
             async with state.proxy() as data:
-                data["all_question_data"][question_number].button = question_data.button
+                data["all_question_data"][question_number].keyboard = question_data.keyboard
                 data["all_question_data"][question_number].selected_answer_option = question_data.selected_answer_option
 
 def register_passing_the_test_v2(dp: Dispatcher):
-    dp.register_callback_query_handler(code_request, lambda c: c.data == "passing_the_test_v2", state=all.interface_all_stateQ1)
-    dp.register_message_handler(output_information_about_test, content_types = ['text'], state=test_status_v2.Q1)
-    dp.register_callback_query_handler(creates_variable_with_a_test,lambda c: c.data == "start_test", state=test_status_v2.Q2)
-    dp.register_message_handler(text_response,content_types = ['text'], state=test_status_v2.Q4)
-    dp.register_callback_query_handler(callbacks_finish_the_test, lambda c: c.data == "finish_the_test", state=test_status_v2.Q3)
-    dp.register_callback_query_handler(callbacks_next_prev, lambda c: c.data == "next" or c.data == "prev", state=test_status_v2.Q3)
     dp.register_callback_query_handler(callbacks, state=test_status_v2.Q3)

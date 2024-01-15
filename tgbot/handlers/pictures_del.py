@@ -1,33 +1,36 @@
 import os.path
 import os
 from aiogram import Dispatcher, types
-from aiogram.dispatcher import FSMContext
+from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardMarkup
 from tgbot.middlewares.DBhelp import BotDB
 from tgbot.misc.states import all
+from aiogram import Router, F
 #ошибки 8000
 
 
+router = Router()
 
 length = 20     #длинна кодового слова для теста
 
+@router.callback_query(F.data == "pictures_del", all.interface_all_stateQ1)    
 async def pictures_del(call: types.CallbackQuery, state: FSMContext):
     try:
         Title_Test_code = BotDB.get_pictures_pictures_code(call.from_user.id)
-        button =  InlineKeyboardMarkup()
+        keyboard =  InlineKeyboardMarkup()
         all1 = "Коды картинок доступных для удаления\n"
         for a in Title_Test_code:
-            button_h = types.InlineKeyboardButton(a[0], callback_data = a[0])
-            button.add(button_h)
-        button_h = types.InlineKeyboardButton(("Отмена"), callback_data = "start")
-        button.add(button_h)
-        await call.message.answer(all1, reply_markup = button)
-        await all.test_pictures_delQ1.set()
+            button_h = types.InlineKeyboardButton(text = a[0], callback_data = a[0])
+            keyboard.row(button_h)
+        button_h = types.InlineKeyboardButton(text = "Отмена", callback_data = "start")
+        keyboard.row(button_h)
+        await call.message.answer(all1, reply_markup = keyboard.as_markup())
+        await state.set_state(state=all.test_pictures_delQ1)
     except:
         await call.message.answer("Произошла ошибка 8001")
-        await state.finish()
+        await state.clear()
 
-
+@router.callback_query(all.test_pictures_delQ1)    
 async def pictures_del2(call: types.CallbackQuery, state: FSMContext):
     try:
         flag = 0
@@ -40,13 +43,13 @@ async def pictures_del2(call: types.CallbackQuery, state: FSMContext):
             os.remove(photo_adres)
             BotDB.pictures_del(call.data)
             await call.message.answer("Картинка с кодом " + call.data + " удалена")
-            await state.finish()
+            await state.clear()
             await pictures_del(call,state)
         else:
             pass
     except:
         await call.message.answer("Произошла ошибка 8002")
-        await state.finish()
+        await state.clear()
 
 
 def register_pictures_del(dp: Dispatcher):

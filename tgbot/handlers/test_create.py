@@ -1,12 +1,16 @@
 import codecs
 import os
 from aiogram import Dispatcher, types
-from aiogram.dispatcher import FSMContext
-from aiogram.types import InlineKeyboardMarkup
+from aiogram.fsm.context import FSMContext
+from aiogram.utils.keyboard import InlineKeyboardBuilder
+from aiogram import Router, F
 from tgbot.middlewares.DBhelp import BotDB
 from tgbot.misc.states import all
 from tgbot.handlers.interface_all import interface_all_begin
 from tgbot.handlers.interface_all import interface_all_begin2
+from aiogram.types import ContentType
+
+from bot import bot
 
 import random
 import string
@@ -15,24 +19,27 @@ import string
 
 length = 10     #длинна кодового слова для теста
 
+router = Router()
+
+@router.callback_query(F.data == "test_create", all.interface_all_stateQ1)
 async def test_create(call: types.CallbackQuery, state: FSMContext):
     try:
-        button =  InlineKeyboardMarkup()
+        keyboard =  InlineKeyboardBuilder()
         button_h = types.InlineKeyboardButton(text="Отмена", callback_data="start")
-        button.add(button_h)
-        await call.message.answer("Отправьте файл формата .txt с тесто\nКодировка файла UTF-8",reply_markup = button)
-        await all.test_readQ1.set()
+        keyboard.add(button_h)
+        await call.message.answer("Отправьте файл формата .txt с тесто\nКодировка файла UTF-8",reply_markup = keyboard.as_markup())
+        await state.set_state(state=all.test_readQ1)
     except:
         await call.message.answer("Произошла ошибка 9301")
-        await state.finish()
+        await state.clear()
 
-
+@router.message(F.content_type == ContentType.DOCUMENT, all.test_readQ1)
 async def test_create3(message: types.Message, state: FSMContext):
     try:
         #получение содержимого файла
         if message.document.mime_type == 'text/plain':
             file_name = os.path.join(".", "Test_files", message.document.file_name)
-            await message.document.download(destination_file=file_name)
+            await bot.download(message.document.file_id, destination=file_name)
             with codecs.open(file_name, encoding='utf-8') as file:
                 text = file.read()
             #генерация случайного кода
@@ -163,21 +170,23 @@ async def test_create3(message: types.Message, state: FSMContext):
                         t1 = t1.replace("\\+","")
                         BotDB.answer_test_add(test_question_id, t1.replace('\r', ''), 1)
 
-            await state.finish()
+            await state.clear()
             file = os.path.join(".", "Test_files", message.document.file_name)
             os.remove(file)
             await interface_all_begin(message,state)
     except:
         await message.answer("Произошла ошибка 9302")
-        await state.finish()
+        await state.clear()
 
+
+@router.callback_query(F.data == "test_create_help", all.interface_all_stateQ1)
 async def test_create_help(call: types.CallbackQuery, state: FSMContext):
     try:
         await call.message.answer("В разработке")
         await interface_all_begin2(call,state)
     except:
         await call.message.answer("Произошла ошибка 9303")
-        await state.finish()
+        await state.clear()
 
 def register_test_create(dp: Dispatcher):
     dp.register_callback_query_handler(test_create, lambda c: c.data == "test_create", state=all.interface_all_stateQ1)

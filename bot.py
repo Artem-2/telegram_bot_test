@@ -2,6 +2,15 @@ import asyncio
 import logging 
 
 from tgbot.handlers import interface_all
+from tgbot.handlers import activete_deactivete
+from tgbot.handlers import get_test_result_admin
+from tgbot.handlers import get_test_result_one_day
+from tgbot.handlers import get_test_result
+from tgbot.handlers import passing_the_test_v2
+from tgbot.handlers import test_create
+from tgbot.handlers import pictures_del
+from tgbot.handlers import registration
+
 
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
@@ -14,6 +23,10 @@ from tgbot.config import config
 
 logger = logging.getLogger(__name__)
 
+storage = MemoryStorage()
+session = AiohttpSession(proxy=config.tg_bot.proxy)
+bot = Bot(token=config.tg_bot.token, session=session, parse_mode='HTML')
+dp = Dispatcher(storage=storage, fsm_strategy=FSMStrategy.GLOBAL_USER)
 
 
 
@@ -25,10 +38,16 @@ async def main():
     logger.info("Starting bot")
 
     
-    storage = MemoryStorage()
-    session = AiohttpSession(proxy=config.tg_bot.proxy)
-    bot = Bot(token=config.tg_bot.token, session=session, parse_mode='HTML')
-    dp = Dispatcher(storage=storage, fsm_strategy=FSMStrategy.GLOBAL_USER)
+    
+
+    dp.include_routers(activete_deactivete.router)
+    dp.include_routers(get_test_result_admin.router)
+    dp.include_routers(get_test_result_one_day.router)
+    dp.include_routers(get_test_result.router)
+    dp.include_routers(passing_the_test_v2.router)
+    dp.include_routers(test_create.router)
+    dp.include_routers(pictures_del.router)
+    dp.include_routers(registration.router)
     dp.include_routers(interface_all.router)
 
 
@@ -48,7 +67,6 @@ async def main():
         except:
             pass
         await dp.storage.close()
-        await dp.storage.wait_closed()
         await bot.session.close()
 
 

@@ -2,35 +2,37 @@ import asyncio
 import xlwt
 import os
 from aiogram import Dispatcher, types
-from aiogram.dispatcher import FSMContext
+from aiogram.fsm.context import FSMContext
+from aiogram.types.input_file import FSInputFile
+from aiogram import Router, F
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 from tgbot.middlewares.DBhelp import BotDB
 from tgbot.misc.states import all
-from aiogram.types import InlineKeyboardMarkup
 from tgbot.handlers.interface_all import interface_all_begin2
 #ошибки 2000
 
 
+router = Router()
 
-
-
+@router.callback_query(F.data == "get_test_result", all.interface_all_stateQ1)
 async def get_test_result(call: types.CallbackQuery, state: FSMContext):
     try:
         Title_Test_code = BotDB.get_test_title_test_code_no_active_mode(call.from_user.id)
-        button =  InlineKeyboardMarkup()
+        keyboard =  InlineKeyboardBuilder()
         all1 = "Тесты, данные о которых вы можете получить\n"
         for a in Title_Test_code:
             all1 = all1 + "\n" + "Код теста: " + a[1] + "\n" + "Название теста: " + a[0] + "\n"
-            button_h = types.InlineKeyboardButton((a[1]), callback_data = a[1])
-            button.add(button_h)
-        button_h = types.InlineKeyboardButton(("Отмена"), callback_data = "start")
-        button.add(button_h)
-        await call.message.answer(all1, reply_markup = button)
-        await all.get_testQ1.set()
+            button_h = types.InlineKeyboardButton(text = a[1], callback_data = a[1])
+            keyboard.row(button_h)
+        button_h = types.InlineKeyboardButton(text = "Отмена", callback_data = "start")
+        keyboard.row(button_h)
+        await call.message.answer(all1, reply_markup = keyboard.as_markup())
+        await state.set_state(state=all.get_testQ1)
     except:
         await call.message.answer("Произошла ошибка 2001")
-        await state.finish()
+        await state.clear()
 
-
+@router.callback_query(all.get_testQ1)
 async def get_test_result2(call: types.CallbackQuery, state: FSMContext, admin: bool=False):
     try:
         flag = -1
@@ -105,20 +107,16 @@ async def get_test_result2(call: types.CallbackQuery, state: FSMContext, admin: 
             excel_book = os.path.join(".","excel",str(call.data)+".xls")
             book.save(excel_book)
             await asyncio.sleep(3)
-            await call.message.reply_document(open(excel_book, 'rb'))
+            document = FSInputFile(excel_book)
+            from bot import bot
+            await bot.send_document(call.message.chat.id, document)
             await asyncio.sleep(3)
             os.remove(excel_book)
-            await state.finish()
+            await state.clear()
             await interface_all_begin2(call, state)
         else:
             pass
     except:
         await call.message.answer("Произошла ошибка 2002")
-        await state.finish()
+        await state.clear()
 
-
-
-
-def register_get_test_result(dp: Dispatcher):
-    dp.register_callback_query_handler(get_test_result, lambda c: c.data == "get_test_result", state=all.interface_all_stateQ1)
-    dp.register_callback_query_handler(get_test_result2, state=all.get_testQ1)
