@@ -41,6 +41,7 @@ class question_class(object):
         self.photo = None
         #все варианты ответа (текст ответа, правильный ли ответ, id ответа)
         self.answers = None
+        self.random_answers = None
         #время ответа(оставшееся время)
         self.response_time = None
         #выбранный(е) вариант ответа
@@ -48,16 +49,19 @@ class question_class(object):
         #текстовый ответ на вопрос (текст ответа, id ответа)
         self.text_response = None
         #номер правильного ответа
-        self.correct_answer_number = None
+        self.correct_answer_number = []
         #есть ли вопрос в базе данных
         self.response_id_in_the_database = []
 
     #создание основных кнопок
     def button_create(self):
+        flag = False
+        if self.correct_answer_number == []:
+            flag = True
         if self.answers != None:
             i = 0
             self.keyboard =  InlineKeyboardBuilder()
-            for answer in random.sample(self.answers,len(self.answers)):
+            for answer in self.random_answers:
                 self.text_question = self.text_question + "\n" + chr(ord('a') + i) + ") " + str(answer[0])
 
                 if self.selected_answer_option != None:
@@ -68,15 +72,13 @@ class question_class(object):
                         button_h = types.InlineKeyboardButton(text = chr(ord('a') + i), callback_data = str(i))
                 else:
                     button_h = types.InlineKeyboardButton(text = chr(ord('a') + i), callback_data = str(i))
-                if self.type == "one_answer":
-                    if answer[1] == 1:
-                        self.correct_answer_number = i
-                else:
-                    if answer[1] == 1:
-                        if type(self.correct_answer_number) == list:
+                if flag == True:
+                    if self.type == "one_answer":
+                        if answer[1] == 1:
+                            self.correct_answer_number = i
+                    else:
+                        if answer[1] == 1:
                             self.correct_answer_number.append(i)
-                        else:
-                            self.correct_answer_number = [i]
                 i = i+1
                 self.keyboard.row(button_h)
     
@@ -276,6 +278,7 @@ async def creates_variable_with_a_test(call: types.CallbackQuery, state: FSMCont
         #добавление в переменную всех вариантов ответа на данный вопрос
         answers = BotDB.get_answer_test(question[0])
         question_data.answers = answers
+        question_data.random_answers = random.sample(answers,len(answers))
         #добавление в переменную id вопроса
         question_data.question_id = question[0]
         #добавление в переменную текста вопроса
@@ -303,7 +306,6 @@ async def creates_variable_with_a_test(call: types.CallbackQuery, state: FSMCont
 ###################################################################################################################################
 #прохождение теста отправка одного вопроса
 async def sending_a_message(message: types.Message, state: FSMContext):
-    print("тут")
     data = await state.get_data()
     all_question_data = data["all_question_data"]
     question_number = data["question_number"]
@@ -343,13 +345,13 @@ async def callbacks_next_prev(call: types.CallbackQuery, state: FSMContext):
     #проверка есть ли вопрос в базе данных и есть ли ответ на него
     if question_data.response_id_in_the_database != None and question_data.selected_answer_option != None:
         #проверка на тип вопроса
-        if question_data.type == "one_answer":
-            is_correct_answer = question_data.correct_answer_number == question_data.selected_answer_option
+        if question_data.type == "one_answer" and question_data.selected_answer_option != []:
+            is_correct_answer = question_data.correct_answer_number == question_data.selected_answer_option[0]
             #отправка результата в базу данных
             BotDB.answer_question_result_update(question_data.response_id_in_the_database, id_of_the_test_results, is_correct_answer,question_data.question_id,question_data.answers[question_data.selected_answer_option[0]][2])
-        elif question_data.type == "many_answers":
-            helper_1 = question_data.correct_answer_number.sort()
-            helper_2 = question_data.selected_answer_option.sort()
+        elif question_data.type == "many_answers" and question_data.selected_answer_option != []:
+            helper_1 = sorted(question_data.correct_answer_number)
+            helper_2 = sorted(question_data.selected_answer_option)
             is_correct_answer = helper_1 == helper_2
             answers = []
             for s in question_data.selected_answer_option:
@@ -365,7 +367,7 @@ async def callbacks_next_prev(call: types.CallbackQuery, state: FSMContext):
         for i in reversed(list(range(question_number + 1,len_test))):
             if all_question_data[i].response_time != 0:
                 question_number = i
-    elif call.data == "next":
+    elif call.data == "prev":
         #проверка есть ли вопрос до в котором не вышло время
         for i in list(range(0,question_number)):
             if all_question_data[i].response_time != 0:
@@ -402,6 +404,7 @@ async def text_response(message: types.Message, state: FSMContext):
 ###################################################################################################################################
 async def callbacks_finish_the_test(call: types.CallbackQuery, state: FSMContext):
     data = await state.get_data()
+    all_question_data = data["all_question_data"]
     id_of_the_test_results = data["id_of_the_test_results"]
     test_id = data["test_id"]
     results = BotDB.get_question_result(id_of_the_test_results)
@@ -409,6 +412,10 @@ async def callbacks_finish_the_test(call: types.CallbackQuery, state: FSMContext
     sum = 0
     cost = 0
     mark1 = 0
+    number_of_text_questions = 0
+    for a in all_question_data:
+        if a.type == "text":
+            number_of_text_questions = number_of_text_questions + 1
     if mark[1] == 0 and mark[0] == 0 and mark[2] == 0:
         await call.message.answer("Тест пройден")
         BotDB.test_result_add_result("Тест пройден", id_of_the_test_results, "None")
@@ -417,13 +424,13 @@ async def callbacks_finish_the_test(call: types.CallbackQuery, state: FSMContext
             if r[0] != None:
                 sum = sum + r[0]
                 cost = cost + 1
-        await call.message.answer(str(sum)+" правильных ответов из "+str(cost))
+        await call.message.answer(str(sum)+" правильных ответов из "+str(cost - number_of_text_questions))
         if int(mark[2]) <= sum:
             await call.message.answer("Тест сдан")
-            BotDB.test_result_add_result(str(sum)+"/"+str(cost), id_of_the_test_results, "Тест сдан")
+            BotDB.test_result_add_result(str(sum)+"/"+str(cost - number_of_text_questions), id_of_the_test_results, "Тест сдан")
         else:
             await call.message.answer("Тест не сдан")
-            BotDB.test_result_add_result(str(sum)+"/"+str(cost), id_of_the_test_results, "Тест не сдан")
+            BotDB.test_result_add_result(str(sum)+"/"+str(cost - number_of_text_questions), id_of_the_test_results, "Тест не сдан")
     else:
         for r in results:
             if r[0] != None:
@@ -437,7 +444,7 @@ async def callbacks_finish_the_test(call: types.CallbackQuery, state: FSMContext
             mark1 = 3
         else:
             mark1 = 2
-        await call.message.answer(str(sum)+" правильных ответов из "+str(cost))
+        await call.message.answer(str(sum)+" правильных ответов из "+str(cost - number_of_text_questions))
         await call.message.answer("Оценка: "+str(mark1))
         BotDB.test_result_add_result(str(sum)+"/"+str(cost), id_of_the_test_results, mark1)
     await state.clear()
@@ -464,8 +471,6 @@ async def callbacks(call: types.CallbackQuery, state: FSMContext):
                 question_data.selected_answer_option = [call_data]
                 flag_answers = True
         else:
-            print(question_data.selected_answer_option)
-            print(call_data)
             if not(call_data in question_data.selected_answer_option):
                 question_data.selected_answer_option.append(call_data)
                 question_data.selected_answer_option.sort()
@@ -482,6 +487,3 @@ async def callbacks(call: types.CallbackQuery, state: FSMContext):
             all_question_data[question_number].keyboard = question_data.keyboard
             all_question_data[question_number].selected_answer_option = question_data.selected_answer_option
             await state.update_data(all_question_data=all_question_data)
-
-def register_passing_the_test_v2(dp: Dispatcher):
-    dp.register_callback_query_handler(callbacks, state=test_status_v2.Q3)
