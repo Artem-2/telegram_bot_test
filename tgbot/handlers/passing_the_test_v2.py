@@ -13,6 +13,14 @@ import random
 #ошибки 6000
 time_update = 5 #частота обновления таймера
 
+
+#id = BotDB.answer_question_result(id1,True,msg[i-1][4],msg[i-1][5][int(call_data)])
+#BotDB.answer_question_result_update(msg[i-1][8], id1,True,msg[i-1][4],msg[i-1][5][int(call_data)])
+#id = BotDB.answer_question_result_multiple_answers(id1,False,msg[i-1][4],text)
+#BotDB.answer_question_result_multiple_answers_update(msg[i-1][8], id1,False,msg[i-1][4],text)
+
+
+
 router = Router()
 #класс для переменной теста
 class question_class(object):
@@ -36,13 +44,13 @@ class question_class(object):
         #время ответа(оставшееся время)
         self.response_time = None
         #выбранный(е) вариант ответа
-        self.selected_answer_option = None
+        self.selected_answer_option = []
         #текстовый ответ на вопрос (текст ответа, id ответа)
         self.text_response = None
         #номер правильного ответа
         self.correct_answer_number = None
         #есть ли вопрос в базе данных
-        self.response_id_in_the_database = None
+        self.response_id_in_the_database = []
 
     #создание основных кнопок
     def button_create(self):
@@ -74,7 +82,7 @@ class question_class(object):
     
     #создание кнопок времмени и перехода на следующий или приведущий вопрос
     def button_create_time_and_auxiliary_buttons(self, len_test):
-        keyboard = copy.deepcopy(self.button)
+        keyboard = copy.deepcopy(self.keyboard)
         if self.question_number == 0:
             button_h_2 = types.InlineKeyboardButton(text = "Далее", callback_data = "next")
             keyboard.row(button_h_2)
@@ -96,15 +104,15 @@ class question_class(object):
         await asyncio.sleep(self.response_time)
         try:
             await self.message_id.delete()
-            async with state.proxy() as data:
-                all_question_data = data["all_question_data"]
+            data = await state.get_data()
+            all_question_data = data["all_question_data"]
             #проверка есть ли вопрос после в котором не вышло время
             for i in reversed(list(range(question_number + 1,len_test))):
                 if all_question_data[i].response_time != 0:
                     question_number = i
-            async with state.proxy() as data:
-                data["question_number"] = question_number
-                data["all_question_data"].response_time = 0
+            await state.update_data(question_number=question_number)
+            all_question_data.response_time = 0
+            await state.update_data(all_question_data=all_question_data)
             await sending_a_message(message, state)
         except:
             pass
@@ -119,44 +127,41 @@ class question_class(object):
 
     #обновление времени в сообщения
     async def updating_the_time_in_the_message(self, len_test, state: FSMContext):
-        
-        async with state.proxy() as data:
+        try:
+            data = await state.get_data()
             question_number = data["question_number"]
 
-        r_time = self.response_time
-        time = datetime.datetime.now()
-        flag_exit = 1
-        helper = 0
-        while flag_exit != 0:
-            await asyncio.sleep(1)
-            async with state.proxy() as data:
+            r_time = self.response_time
+            time = datetime.datetime.now()
+            flag_exit = 1
+            helper = 0
+            while flag_exit != 0:
+                await asyncio.sleep(1)
+                data = await state.get_data()
                 question_number_helper = data["question_number"]
                 all_question_data = data["all_question_data"]
-            time2 = datetime.datetime.now() - time
-            all_question_data[question_number].response_time = r_time - int(time2.total_seconds())
-            if int(time2.total_seconds()) // 5 > helper:
-                helper = int(time2.total_seconds()) // 5
-                try:
-                    if question_number_helper == question_number:
-                        keyboard = all_question_data[question_number].button_create_time_and_auxiliary_buttons(len_test)
-                        async with state.proxy() as data:
-                            data["all_question_data"][question_number].response_time = all_question_data[question_number].response_time
-                        #изменение кнопок
-                        await all_question_data[question_number].message_id.edit_reply_markup(reply_markup = keyboard.as_markup())
-                    else:
+                time2 = datetime.datetime.now() - time
+                all_question_data[question_number].response_time = r_time - int(time2.total_seconds())
+                if int(time2.total_seconds()) // 5 > helper:
+                    helper = int(time2.total_seconds()) // 5
+                    try:
+                        if question_number_helper == question_number:
+                            keyboard = all_question_data[question_number].button_create_time_and_auxiliary_buttons(len_test)
+                            await state.update_data(all_question_data=all_question_data)
+                            #изменение кнопок
+                            await all_question_data[question_number].message_id.edit_reply_markup(reply_markup = keyboard.as_markup())
+                        else:
+                            flag_exit = 0
+                            await state.update_data(all_question_data=all_question_data)
+                    except:
                         flag_exit = 0
-                        async with state.proxy() as data:
-                            data["all_question_data"][question_number].response_time = all_question_data[question_number].response_time
-                except:
-                    flag_exit = 0
-                    async with state.proxy() as data:
-                        data["all_question_data"][question_number].response_time = all_question_data[question_number].response_time
-            else:
-                if question_number_helper != question_number:
-                    flag_exit = 0
-                    async with state.proxy() as data:
-                        data["all_question_data"][question_number].response_time = all_question_data[question_number].response_time
-
+                        await state.update_data(all_question_data=all_question_data)
+                else:
+                    if question_number_helper != question_number:
+                        flag_exit = 0
+                        await state.update_data(all_question_data=all_question_data)
+        except:
+            pass
 
 
 ###################################################################################################################################
@@ -164,7 +169,7 @@ class question_class(object):
 @router.callback_query(F.data == "passing_the_test_v2", all.interface_all_stateQ1)
 async def code_request(call: types.CallbackQuery, state: FSMContext):
     keyboard =  InlineKeyboardBuilder()
-    button_h = types.InlineKeyboardButton(("Отмена"), callback_data = "start")
+    button_h = types.InlineKeyboardButton(text="Отмена", callback_data = "start")
     keyboard.row(button_h)
     await call.message.answer("Введите код теста", reply_markup = keyboard.as_markup())
     await state.set_state(state=test_status_v2.Q1)
@@ -195,13 +200,12 @@ async def output_information_about_test(message: types.Message, state: FSMContex
         if active_mode[0]:
             if int(len(t)) < int(number_of_attempts):
                 #передача данных в машину состояний
-                async with state.proxy() as data:
-                    data["time_question"] = code[1]
-                    data["test_id"] = code[0]
-                    data["user_id"] = user_id[0]
-                    data["questions"] = questions
-                    data["random_mode"] = random_mode
-                    data["len_test"] = len_test
+                await state.update_data(time_question=code[1])
+                await state.update_data(test_id=code[0])
+                await state.update_data(user_id=user_id[0])
+                await state.update_data(questions=questions)
+                await state.update_data(random_mode=random_mode)
+                await state.update_data(len_test=len_test)
                 #создание клавиатуры для начала тестирования
                 keyboard =  InlineKeyboardBuilder()
                 button_h = types.InlineKeyboardButton(text="Начать тестирование", callback_data="start_test")
@@ -229,13 +233,13 @@ async def output_information_about_test(message: types.Message, state: FSMContex
 @router.callback_query(F.data == "start_test", test_status_v2.Q2)
 async def creates_variable_with_a_test(call: types.CallbackQuery, state: FSMContext):
     #получение всех необходимых данных из машины состояний
-    async with state.proxy() as data:
-        questions = data["questions"]
-        random_mode = data["random_mode"]
-        len_test = data["len_test"]
-        time_question = data["time_question"]
-        test_id = data["test_id"]
-        user_id = data["user_id"]
+    data = await state.get_data()
+    questions = data["questions"]
+    random_mode = data["random_mode"]
+    len_test = data["len_test"]
+    time_question = data["time_question"]
+    test_id = data["test_id"]
+    user_id = data["user_id"]
     #добавление в базу данных начало прохождения теста
     id_of_the_test_results = BotDB.test_result_add(user_id,test_id)
     #определение вопросов которые будут в тесте
@@ -259,13 +263,16 @@ async def creates_variable_with_a_test(call: types.CallbackQuery, state: FSMCont
         text = "Вопрос:\n" + str(question[1])
         if len(correct_answers) > 1:
             text = text + "\n\nВопрос с несколькими вариантами ответа"
-            question_data.type = "text"
+            question_data.type = "many_answers"
+            question_data.response_id_in_the_database = BotDB.answer_question_result_multiple_answers(id_of_the_test_results,False,question[0]," ")
         elif len(correct_answers) == 1:
             text = text + "\n\nВопрос с одним вариантом ответа"
             question_data.type = "one_answer"
-        elif len(correct_answers) == 1:
+            question_data.response_id_in_the_database = BotDB.answer_question_result(id_of_the_test_results,False,question[0],0)
+        elif len(correct_answers) == 0:
             text = text + "\n\nВопрос с текстовым ответом"
-            question_data.type = "many_answers"
+            question_data.type = "text"
+            question_data.response_id_in_the_database = BotDB.answer_question_result_multiple_answers(id_of_the_test_results,False,question[0]," ")
         #добавление в переменную всех вариантов ответа на данный вопрос
         answers = BotDB.get_answer_test(question[0])
         question_data.answers = answers
@@ -288,19 +295,19 @@ async def creates_variable_with_a_test(call: types.CallbackQuery, state: FSMCont
         question_data.button_create()
         all_question_data.append(question_data)
         i += 1
-    async with state.proxy() as data:
-        data["all_question_data"] = all_question_data
-        data["id_of_the_test_results"] = id_of_the_test_results
-        data["question_number"] = 0
+    await state.update_data(all_question_data=all_question_data)
+    await state.update_data(id_of_the_test_results=id_of_the_test_results)
+    await state.update_data(question_number=0)
     await sending_a_message(call.message, state)
 
 ###################################################################################################################################
 #прохождение теста отправка одного вопроса
 async def sending_a_message(message: types.Message, state: FSMContext):
-    async with state.proxy() as data:
-        all_question_data = data["all_question_data"]
-        question_number = data["question_number"]
-        len_test = data["len_test"]
+    print("тут")
+    data = await state.get_data()
+    all_question_data = data["all_question_data"]
+    question_number = data["question_number"]
+    len_test = data["len_test"]
     #выбор необходимого вопроса
     question_data = all_question_data[question_number]
     #создание кнопопк
@@ -318,18 +325,20 @@ async def sending_a_message(message: types.Message, state: FSMContext):
         await state.set_state(state=test_status_v2.Q4)
     else:
         await state.set_state(state=test_status_v2.Q3)
-    async with state.proxy() as data:
-        data["all_question_data"] = all_question_data
+    await state.update_data(all_question_data=all_question_data)
 
 ###################################################################################################################################
+@router.callback_query(F.data == "next", test_status_v2.Q4)
+@router.callback_query(F.data == "prev", test_status_v2.Q4)
 @router.callback_query(F.data == "next", test_status_v2.Q3)
 @router.callback_query(F.data == "prev", test_status_v2.Q3)
+@router.callback_query(F.data == "finish_the_test", test_status_v2.Q3)
 async def callbacks_next_prev(call: types.CallbackQuery, state: FSMContext):
-    async with state.proxy() as data:
-        id_of_the_test_results = data["id_of_the_test_results"]
-        all_question_data = data["all_question_data"]
-        question_number = data["question_number"]
-        len_test = data["len_test"]
+    data = await state.get_data()
+    id_of_the_test_results = data["id_of_the_test_results"]
+    all_question_data = data["all_question_data"]
+    question_number = data["question_number"]
+    len_test = data["len_test"]
     question_data = all_question_data[question_number]
     #проверка есть ли вопрос в базе данных и есть ли ответ на него
     if question_data.response_id_in_the_database != None and question_data.selected_answer_option != None:
@@ -337,16 +346,16 @@ async def callbacks_next_prev(call: types.CallbackQuery, state: FSMContext):
         if question_data.type == "one_answer":
             is_correct_answer = question_data.correct_answer_number == question_data.selected_answer_option
             #отправка результата в базу данных
-            BotDB.answer_question_result_update(question_data.response_id_in_the_database, id_of_the_test_results, is_correct_answer,question_data.question_id,question_data.answers[question_data.selected_answer_option])
+            BotDB.answer_question_result_update(question_data.response_id_in_the_database, id_of_the_test_results, is_correct_answer,question_data.question_id,question_data.answers[question_data.selected_answer_option[0]][2])
         elif question_data.type == "many_answers":
             helper_1 = question_data.correct_answer_number.sort()
             helper_2 = question_data.selected_answer_option.sort()
             is_correct_answer = helper_1 == helper_2
             answers = []
             for s in question_data.selected_answer_option:
-                answers.append(question_data.answers[s])
+                answers.append(question_data.answers[s][2])
             #отправка результата в базу данных
-            BotDB.answer_question_result_update(question_data.response_id_in_the_database, id_of_the_test_results, is_correct_answer,question_data.question_id,answers)
+            BotDB.answer_question_result_multiple_answers_update(question_data.response_id_in_the_database, id_of_the_test_results, is_correct_answer,question_data.question_id,",".join(str(x) for x in answers))
     #удаление текущего сообщения
     await question_data.deleting_messages()
     #переход на следующий или приведущий вопрос
@@ -356,48 +365,45 @@ async def callbacks_next_prev(call: types.CallbackQuery, state: FSMContext):
         for i in reversed(list(range(question_number + 1,len_test))):
             if all_question_data[i].response_time != 0:
                 question_number = i
-    else:
+    elif call.data == "next":
         #проверка есть ли вопрос до в котором не вышло время
         for i in list(range(0,question_number)):
             if all_question_data[i].response_time != 0:
                 question_number = i
-    async with state.proxy() as data:
-        data["question_number"] = question_number
-        data["all_question_data"] = all_question_data
-    await sending_a_message(call.message, state)
+    await state.update_data(question_number=question_number)
+    await state.update_data(all_question_data=all_question_data)
+    if call.data == "finish_the_test":
+        await callbacks_finish_the_test(call, state)
+    else:
+        await sending_a_message(call.message, state)
     
     
 ###################################################################################################################################
 @router.message(F.text, test_status_v2.Q4)
 async def text_response(message: types.Message, state: FSMContext):
-    async with state.proxy() as data:
-        all_question_data = data["all_question_data"]
-        question_number = data["question_number"]
-        len_test = data["len_test"]
-        id_of_the_test_results = data["id_of_the_test_results"]
+    data = await state.get_data()
+    all_question_data = data["all_question_data"]
+    question_number = data["question_number"]
+    len_test = data["len_test"]
     question_data = all_question_data[question_number]
     #занесение в бд
-    if question_data.text_response == None:
-        id_answer = BotDB.answer_question_result_text_response(id_of_the_test_results, question_data.question_id, message.text)
-        await question_data.deleting_messages()
-    else:
-        BotDB.answer_question_result_text_response_update(question_data.text_response[1], message.text)
-        await question_data.deleting_messages()
+    BotDB.answer_question_result_text_response_update(question_data.response_id_in_the_database, message.text)
+    await question_data.deleting_messages()
     #переход на следующий вопрос
     for i in reversed(list(range(question_number + 1,len_test))):
         if all_question_data[i].response_time != 0:
             question_number_next = i
-    async with state.proxy() as data:
-        data["question_number"] = question_number_next
-        data["all_question_data"][question_number].text_response = [message.text, id_answer]
+
+    all_question_data[question_number].text_response = message.text
+    await state.update_data(question_number=question_number_next)
+    await state.update_data(all_question_data=all_question_data)
     await sending_a_message(message, state)
 
 ###################################################################################################################################
-@router.callback_query(F.data == "finish_the_test", test_status_v2.Q3)
 async def callbacks_finish_the_test(call: types.CallbackQuery, state: FSMContext):
-    async with state.proxy() as data:
-        id_of_the_test_results = data["id_of_the_test_results"]
-        test_id = data["test_id"]
+    data = await state.get_data()
+    id_of_the_test_results = data["id_of_the_test_results"]
+    test_id = data["test_id"]
     results = BotDB.get_question_result(id_of_the_test_results)
     mark = BotDB.get_test_mark(test_id)
     sum = 0
@@ -448,27 +454,34 @@ async def callbacks(call: types.CallbackQuery, state: FSMContext):
     except:
         flag = 1
     if flag == 0:
-        async with state.proxy() as data:
-            all_question_data = data["all_question_data"]
-            question_number = data["question_number"]
-            len_test = data["len_test"]
+        data = await state.get_data()
+        all_question_data = data["all_question_data"]
+        question_number = data["question_number"]
+        len_test = data["len_test"]
         question_data = all_question_data[question_number]
         if question_data.type == "one_answer":
             if question_data.selected_answer_option != [call_data]:
                 question_data.selected_answer_option = [call_data]
                 flag_answers = True
         else:
-            if not(question_data.selected_answer_option in call_data):
+            print(question_data.selected_answer_option)
+            print(call_data)
+            if not(call_data in question_data.selected_answer_option):
                 question_data.selected_answer_option.append(call_data)
                 question_data.selected_answer_option.sort()
                 flag_answers = True
+            else:
+                question_data.selected_answer_option.remove(call_data)
+                question_data.selected_answer_option.sort()
+                flag_answers = True
+
         if flag_answers:
             question_data.button_create()
             keyboard = question_data.button_create_time_and_auxiliary_buttons(len_test)
             await question_data.message_id.edit_reply_markup(reply_markup = keyboard.as_markup())
-            async with state.proxy() as data:
-                data["all_question_data"][question_number].keyboard = question_data.keyboard
-                data["all_question_data"][question_number].selected_answer_option = question_data.selected_answer_option
+            all_question_data[question_number].keyboard = question_data.keyboard
+            all_question_data[question_number].selected_answer_option = question_data.selected_answer_option
+            await state.update_data(all_question_data=all_question_data)
 
 def register_passing_the_test_v2(dp: Dispatcher):
     dp.register_callback_query_handler(callbacks, state=test_status_v2.Q3)

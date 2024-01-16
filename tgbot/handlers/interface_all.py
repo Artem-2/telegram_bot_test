@@ -12,7 +12,7 @@ from tgbot.filters.admin import AdminFilter
 #ошибки 5000
 
 from tgbot.config import config
-number_of_changes_rename = config.tg_bot.number_of_changes_rename  #количесто попыток изменения имени
+number_of_changes_rename = int(config.tg_bot.number_of_changes_rename)  #количесто попыток изменения имени
 
 
 all2 = all,default_state,test_status.Q1,test_status.Q2,rename_state.Q1,rename_state.Q2,reg_us.Q1
@@ -48,7 +48,7 @@ async def interface_all_test_create_admin(message: types.Message, state: FSMCont
         await message.answer("Выберите вариант",reply_markup = keyboard.as_markup())
         await state.set_state(state=all.interface_all_stateQ1)
     except:
-        await message.answer("Произошла ошибка 5004")
+        await message.answer("Произошла ошибка 5001")
         await state.clear()
 ####################################################################################################################################################
 async def interface_all_begin_def(message_id, message: types.Message, state: FSMContext):
@@ -81,7 +81,7 @@ async def interface_all_begin_def(message_id, message: types.Message, state: FSM
                 await message.answer("Необходимо пройти регистрацию",reply_markup = keyboard.as_markup())
             await state.set_state(state=all.interface_all_stateQ1)
     except:
-        await message.answer("Произошла ошибка 5001")
+        await message.answer("Произошла ошибка 5002")
         await state.clear()
 ####################################################################################################################################################
 @router.callback_query(F.data == "start", default_state)
@@ -152,7 +152,7 @@ async def interface_all_passing_the_test(call: types.CallbackQuery, state: FSMCo
         await call.message.answer("Выберите вариант",reply_markup = keyboard.as_markup())
         await state.set_state(state=all.interface_all_stateQ1)
     except:
-        await call.message.answer("Произошла ошибка 5002")
+        await call.message.answer("Произошла ошибка 5003")
         await state.clear()
 ####################################################################################################################################################
 @router.callback_query(F.data == "create", all.interface_all_stateBegin)    
@@ -182,7 +182,7 @@ async def interface_all_test_create(call: types.CallbackQuery, state: FSMContext
         await call.message.answer("Выберите вариант",reply_markup = keyboard.as_markup())
         await state.set_state(state=all.interface_all_stateQ1)
     except:
-        await call.message.answer("Произошла ошибка 5003")
+        await call.message.answer("Произошла ошибка 5004")
         await state.clear()
 ####################################################################################################################################################
 @router.message(F.text, default_state)

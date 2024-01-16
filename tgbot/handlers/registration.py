@@ -24,33 +24,28 @@ async def Registration(call: types.CallbackQuery, state: FSMContext):
 @router.message(F.text, reg_us.Q1)
 async def Registration1(message: types.Message, state: FSMContext):
     try:
-        surname = message.text
-        async with state.proxy() as data:
-            data["surname"] = surname
+        await state.update_data(surname=message.text)
         await message.answer("Введите имя")
         await state.set_state(state=reg_us.Q2)
     except:
-        await message.answer("Произошла ошибка 9001")
+        await message.answer("Произошла ошибка 9002")
         await state.clear()
     
 @router.message(F.text, reg_us.Q2)
 async def Registration2(message: types.Message, state: FSMContext):
     try:
-        name = message.text
-        async with state.proxy() as data:
-            data["name"] = name
+        await state.update_data(name=message.text)
         await message.answer("Введите группу (пример: 19-В-1)")
         await state.set_state(state=reg_us.Q3)
     except:
-        await message.answer("Произошла ошибка 9002")
+        await message.answer("Произошла ошибка 9003")
         await state.clear()
 
 @router.message(F.text, reg_us.Q3)
 async def Registration3(message: types.Message, state: FSMContext):
     try:
-        group = message.text
-        async with state.proxy() as data:
-            data["group"] = group
+        await state.update_data(group=message.text)
+        data = await state.get_data()
         BotDB.user_add(message.from_user.id, str(data["surname"]) + " " + str(data["name"]), data["group"])
         await message.answer("Регистрация завершена")
         await message.answer(str(data["surname"]) + " " + str(data["name"]))
@@ -58,5 +53,5 @@ async def Registration3(message: types.Message, state: FSMContext):
         await state.clear()
         await interface_all_begin(message, state)
     except:
-        await message.answer("Произошла ошибка 9003")
+        await message.answer("Произошла ошибка 9004")
         await state.clear()
