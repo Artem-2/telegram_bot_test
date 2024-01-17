@@ -282,7 +282,7 @@ async def creates_variable_with_a_test(call: types.CallbackQuery, state: FSMCont
         if len(correct_answers) > 1:
             text = text + "\n\nВопрос с несколькими вариантами ответа"
             question_data.type = "many_answers"
-            question_data.response_id_in_the_database = BotDB.answer_question_result_multiple_answers(id_of_the_test_results,False,question[0]," ")
+            question_data.response_id_in_the_database = BotDB.answer_question_result_multiple_answers(id_of_the_test_results,False,question[0],"multiple_answers:,")
         elif len(correct_answers) == 1:
             text = text + "\n\nВопрос с одним вариантом ответа"
             question_data.type = "one_answer"
@@ -290,7 +290,7 @@ async def creates_variable_with_a_test(call: types.CallbackQuery, state: FSMCont
         elif len(correct_answers) == 0:
             text = text + "\n\nВопрос с текстовым ответом"
             question_data.type = "text"
-            question_data.response_id_in_the_database = BotDB.answer_question_result_multiple_answers(id_of_the_test_results,False,question[0]," ")
+            question_data.response_id_in_the_database = BotDB.answer_question_result_multiple_answers(id_of_the_test_results,False,question[0],"multiple_answers:,")
         #добавление в переменную всех вариантов ответа на данный вопрос
         answers = BotDB.get_answer_test(question[0])
         question_data.answers = answers
@@ -374,7 +374,7 @@ async def callbacks_next_prev(call: types.CallbackQuery, state: FSMContext):
             for s in question_data.selected_answer_option:
                 answers.append(question_data.answers[s][2])
             #отправка результата в базу данных
-            BotDB.answer_question_result_multiple_answers_update(question_data.response_id_in_the_database, id_of_the_test_results, is_correct_answer,question_data.question_id,",".join(str(x) for x in answers))
+            BotDB.answer_question_result_multiple_answers_update(question_data.response_id_in_the_database, id_of_the_test_results, is_correct_answer,question_data.question_id,"multiple_answers:," + ",".join(str(x) for x in answers))
     #удаление текущего сообщения
     await question_data.deleting_messages()
     #переход на следующий или приведущий вопрос
