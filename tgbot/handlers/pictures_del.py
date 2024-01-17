@@ -1,8 +1,8 @@
 import os.path
 import os
-from aiogram import Dispatcher, types
+from aiogram import types
 from aiogram.fsm.context import FSMContext
-from aiogram.types import InlineKeyboardMarkup
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 from tgbot.middlewares.DBhelp import BotDB
 from tgbot.misc.states import all
 from aiogram import Router, F
@@ -17,7 +17,7 @@ length = 20     #длинна кодового слова для теста
 async def pictures_del(call: types.CallbackQuery, state: FSMContext):
     try:
         Title_Test_code = BotDB.get_pictures_pictures_code(call.from_user.id)
-        keyboard =  InlineKeyboardMarkup()
+        keyboard =  InlineKeyboardBuilder()
         all1 = "Коды картинок доступных для удаления\n"
         for a in Title_Test_code:
             button_h = types.InlineKeyboardButton(text = a[0], callback_data = a[0])
@@ -50,8 +50,3 @@ async def pictures_del2(call: types.CallbackQuery, state: FSMContext):
     except:
         await call.message.answer("Произошла ошибка 8002")
         await state.clear()
-
-
-def register_pictures_del(dp: Dispatcher):
-    dp.register_callback_query_handler(pictures_del, lambda c: c.data == "pictures_del",state=all.interface_all_stateQ1)
-    dp.register_callback_query_handler(pictures_del2, state=all.test_pictures_delQ1)

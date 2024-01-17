@@ -66,9 +66,7 @@ async def interface_all_begin_def(message_id, message: types.Message, state: FSM
             await message.answer("Выберите вариант",reply_markup = keyboard.as_markup())
         else:
             if BotDB.user_exists(message_id) != None:
-                button_h = types.InlineKeyboardButton(text="Начать тест", callback_data="passing_the_test")
-                keyboard.row(button_h)
-                button_h = types.InlineKeyboardButton(text="Начать тест v2", callback_data="passing_the_test_v2")
+                button_h = types.InlineKeyboardButton(text="Начать тест", callback_data="passing_the_test_v2")
                 keyboard.row(button_h)
                 num = BotDB.get_test_user_rename_number_of_changes(message_id)
                 if num[0] < number_of_changes_rename:
@@ -136,9 +134,7 @@ async def interface_all_passing_the_test(call: types.CallbackQuery, state: FSMCo
     try:
         keyboard =  InlineKeyboardBuilder()
         if BotDB.user_exists(call.from_user.id) != None:
-            button_h = types.InlineKeyboardButton(text="Начать тест", callback_data="passing_the_test")
-            keyboard.row(button_h)
-            button_h = types.InlineKeyboardButton(text="Начать тест v2", callback_data="passing_the_test_v2")
+            button_h = types.InlineKeyboardButton(text="Начать тест", callback_data="passing_the_test_v2")
             keyboard.row(button_h)
             num = BotDB.get_test_user_rename_number_of_changes(call.from_user.id)
             if num[0] < number_of_changes_rename:

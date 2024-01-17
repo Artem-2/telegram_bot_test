@@ -26,7 +26,7 @@ async def test_create(call: types.CallbackQuery, state: FSMContext):
     try:
         keyboard =  InlineKeyboardBuilder()
         button_h = types.InlineKeyboardButton(text="Отмена", callback_data="start")
-        keyboard.add(button_h)
+        keyboard.row(button_h)
         await call.message.answer("Отправьте файл формата .txt с тесто\nКодировка файла UTF-8",reply_markup = keyboard.as_markup())
         await state.set_state(state=all.test_readQ1)
     except:
@@ -187,8 +187,3 @@ async def test_create_help(call: types.CallbackQuery, state: FSMContext):
     except:
         await call.message.answer("Произошла ошибка 9303")
         await state.clear()
-
-def register_test_create(dp: Dispatcher):
-    dp.register_callback_query_handler(test_create, lambda c: c.data == "test_create", state=all.interface_all_stateQ1)
-    dp.register_callback_query_handler(test_create_help,  lambda c: c.data == "test_create_help", state=all.interface_all_stateQ1)
-    dp.register_message_handler(test_create3,content_types = ['document'], state=all.test_readQ1)

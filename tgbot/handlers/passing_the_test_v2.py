@@ -2,7 +2,8 @@ import os.path
 import datetime
 import asyncio
 import copy
-from aiogram import Dispatcher, types
+from aiogram.types import InputMediaPhoto, FSInputFile
+from aiogram import Dispatcher, types, Bot
 from aiogram.fsm.context import FSMContext
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram import Router, F
@@ -108,12 +109,27 @@ class question_class(object):
             await self.message_id.delete()
             data = await state.get_data()
             all_question_data = data["all_question_data"]
+            all_question_data[self.question_number].response_time = 0
             #проверка есть ли вопрос после в котором не вышло время
-            for i in reversed(list(range(question_number + 1,len_test))):
+            halper = self.question_number
+            for i in reversed(list(range(self.question_number + 1,len_test))):
                 if all_question_data[i].response_time != 0:
-                    question_number = i
-            await state.update_data(question_number=question_number)
-            all_question_data.response_time = 0
+                    self.question_number = i
+            #проверка есть ли вопрос до в котором не вышло время при условии что нет вопроса после
+            if halper == self.question_number:
+                for i in list(range(0,self.question_number)):
+                    if all_question_data[i].response_time != 0:
+                        self.question_number = i
+            #костыль переходник
+            class call:
+                message: int
+                from_user: int
+            call.message = message
+            call.from_user = message.chat
+            #если вопросов не осталось завершить тест
+            if halper == self.question_number:
+                await callbacks_finish_the_test(call, state)
+            await state.update_data(question_number=self.question_number)
             await state.update_data(all_question_data=all_question_data)
             await sending_a_message(message, state)
         except:
@@ -288,6 +304,7 @@ async def creates_variable_with_a_test(call: types.CallbackQuery, state: FSMCont
         photo = None
         if(photo_code[0] != None):
             photo = os.path.join(".","pictures",str(photo_code[0])+".png")
+            photo = FSInputFile(photo)
         question_data.photo = photo
         #добавление в переменную времени ответа
         if question[2] == 0:

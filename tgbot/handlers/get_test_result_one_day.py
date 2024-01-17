@@ -39,11 +39,11 @@ async def get_test_result_one_day2(call: types.CallbackQuery, state: FSMContext)
             if a[1] == str(call.data):
                 flag = 1
         if flag == 1:
-            async with state.proxy() as data:
-                data["test_code"] = call.data
+            await state.update_data(test_code=call.data)
             test_id = BotDB.get_test_user_create_id(int(call.from_user.id), str(call.data))
             res = BotDB.get_test_result_all(test_id[0][0])
             data_2 = datetime.datetime.now()
+            message_id_list = []
             for r in res:
                 data = datetime.datetime.strptime(r[3], '%Y-%m-%d %H:%M:%S')
                 data_3 = data_2 - data
@@ -62,8 +62,8 @@ async def get_test_result_one_day2(call: types.CallbackQuery, state: FSMContext)
                     button_h = types.InlineKeyboardButton(text="Удалить", callback_data=str(r[4]))
                     keyboard.row(button_h)
                     message_id = await call.message.answer(text, reply_markup = keyboard.as_markup())
-                    async with state.proxy() as data:
-                        data[str(r[4])] = message_id
+                    message_id_list.append([str(r[4]),message_id])
+            await state.update_data(message_id=message_id_list)
             keyboard =  InlineKeyboardBuilder()
             button_h = types.InlineKeyboardButton(text="Назад", callback_data="start")
             keyboard.row(button_h)
@@ -79,8 +79,8 @@ async def get_test_result_one_day2(call: types.CallbackQuery, state: FSMContext)
 @router.callback_query(all.register_get_test_result_one_dayQ2)
 async def get_test_result_one_day3(call: types.CallbackQuery, state: FSMContext):
     try:
-        async with state.proxy() as data:
-            call_data = data["test_code"]
+        data = await state.get_data()
+        call_data = data["test_code"]
         test_id = BotDB.get_test_user_create_id(int(call.from_user.id), str(call_data))
         res = BotDB.get_test_result_all(test_id[0][0])
         flag = 0
@@ -89,8 +89,10 @@ async def get_test_result_one_day3(call: types.CallbackQuery, state: FSMContext)
                 flag = 1
         if flag == 1:
             BotDB.test_result_del(call.data)
-            async with state.proxy() as data:
-                message_id = data[call.data]
+            data = await state.get_data()
+            for d in data["message_id"]:
+                if d[0] == call.data:
+                    message_id = d[1]
             try:
                 asyncio.create_task(await message_id.delete())
             except:
