@@ -135,38 +135,6 @@ class BotDB:
         semaphore_end()
         return r
 
-    def get_test_title(self, id):
-        semaphore_begin()
-        #получить критерии оценок
-        result = self.cursor.execute("SELECT title FROM test WHERE id = ?",(id,))
-        r = result.fetchone()
-        semaphore_end()
-        return r
-
-    def get_test_attempts(self, id):
-        semaphore_begin()
-        #получить колличество попыток
-        result = self.cursor.execute("SELECT number_attempts FROM test WHERE id = ?",(id,))
-        r = result.fetchone()
-        semaphore_end()
-        return r
-
-    def get_test_questions(self, id):
-        semaphore_begin()
-        #получить колличество вопросов
-        result = self.cursor.execute("SELECT number_questions FROM test WHERE id = ?",(id,))
-        r = result.fetchone()
-        semaphore_end()
-        return r
-
-    def get_test_random_mode(self, id):
-        semaphore_begin()
-        #получить колличество вопросов
-        result = self.cursor.execute("SELECT random_mode FROM test WHERE id = ?",(id,))
-        r = result.fetchone()
-        semaphore_end()
-        return r
-
     def test_del(self, id):
         semaphore_begin()
         #удалить тест
@@ -243,14 +211,6 @@ class BotDB:
         semaphore_end()
         return r
 
-    def get_answer_test_right(self, fk_id):
-        semaphore_begin()
-        #получить количество правильных ответов
-        result = self.cursor.execute("SELECT answer,id FROM test_answer WHERE (fk_id = ? AND right_answer = 1)",(fk_id,))
-        r = result.fetchall()
-        semaphore_end()
-        return r
-    
     def get_answer_test_right_v2(self, fk_id):
         semaphore_begin()
         #получить количество правильных ответов
@@ -363,15 +323,6 @@ class BotDB:
         semaphore_end()
         return r
 
-    def answer_question_result2(self, fk_id, result_question, id_question):
-        semaphore_begin()
-        #добавление ответа к вопросу
-        self.cursor.execute("INSERT INTO 'question_result' ('fk_id','result_question','id_question') VALUES (?, ?, ?)",(fk_id,result_question,id_question))
-        self.conn.commit()
-        r = self.cursor.lastrowid
-        semaphore_end()
-        return r
-
     def answer_question_result_multiple_answers(self, fk_id, result_question, id_question, text_response):
         semaphore_begin()
         #добавление ответа к вопросу
@@ -385,15 +336,6 @@ class BotDB:
         semaphore_begin()
         #добавление ответа к вопросу
         self.cursor.execute("UPDATE question_result SET fk_id = ?, result_question = ?, id_question = ?, text_response = ? WHERE id=?",(fk_id, result_question, id_question, text_response, id))
-        self.conn.commit()
-        r = self.cursor.lastrowid
-        semaphore_end()
-        return r
-
-    def answer_question_result_text_response(self, fk_id, id_question, text_response):
-        semaphore_begin()
-        #добавление ответа к вопросу
-        self.cursor.execute("INSERT INTO 'question_result' ('fk_id','id_question','text_response') VALUES (?, ?, ?)",(fk_id,id_question,text_response))
         self.conn.commit()
         r = self.cursor.lastrowid
         semaphore_end()
