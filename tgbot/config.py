@@ -50,10 +50,6 @@ try:
 except:
     dot_env_craete()
     sys.exit("введите все данные в конфиг файл config.env")
-print(config.tg_bot.token)
-print(config.tg_bot.admin_ids)
-print(config.tg_bot.proxy)
-print(config.tg_bot.number_of_changes_rename)
 if config.tg_bot.token == "<bot_token>" or config.tg_bot.admin_ids == "<admins>":
     sys.exit("введите все данные в конфиг файл config.env")
 config2 = config
