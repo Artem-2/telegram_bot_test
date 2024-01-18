@@ -2,8 +2,8 @@ import os.path
 import datetime
 import asyncio
 import copy
-from aiogram.types import InputMediaPhoto, FSInputFile
-from aiogram import Dispatcher, types, Bot
+from aiogram.types import FSInputFile
+from aiogram import types
 from aiogram.fsm.context import FSMContext
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram import Router, F

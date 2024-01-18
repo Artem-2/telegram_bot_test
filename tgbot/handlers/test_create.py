@@ -1,6 +1,6 @@
 import codecs
 import os
-from aiogram import Dispatcher, types, Bot
+from aiogram import types, Bot
 from aiogram.fsm.context import FSMContext
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram import Router, F

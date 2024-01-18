@@ -1,4 +1,4 @@
-from aiogram import Dispatcher, types
+from aiogram import types
 from aiogram.fsm.context import FSMContext
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram import Router, F
@@ -72,11 +72,3 @@ async def test_del3(call: types.CallbackQuery, state: FSMContext):
     except:
         await call.message.answer("Произошла ошибка 9403")
         await state.clear()
-
-
-
-
-def register_test_del(dp: Dispatcher):
-    dp.register_callback_query_handler(test_del1,lambda c: c.data == "test_del", state=all.interface_all_stateQ1)
-    dp.register_callback_query_handler(test_del2, state=all.test_del_stateQ1)
-    dp.register_callback_query_handler(test_del3, lambda c: c.data == "test_del_activate", state=all.test_del_stateQ2)

@@ -1,4 +1,4 @@
-from aiogram import types, Dispatcher
+from aiogram import types
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
 from aiogram import Router, F

@@ -1,7 +1,7 @@
 import asyncio
 import xlwt
 import os
-from aiogram import Dispatcher, types
+from aiogram import types
 from aiogram.fsm.context import FSMContext
 from aiogram.types.input_file import FSInputFile
 from aiogram import Router, F

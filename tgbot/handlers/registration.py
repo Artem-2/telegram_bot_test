@@ -1,4 +1,4 @@
-from aiogram import types, Dispatcher
+from aiogram import types
 from aiogram.fsm.context import FSMContext
 from tgbot.middlewares.DBhelp import BotDB
 from tgbot.misc.states import all,reg_us
