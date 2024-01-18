@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 from typing import List
 from environs import Env
-
+from tgbot.misc.dot_env_craete import dot_env_craete
+import sys
 
 @dataclass
 class DbConfig:
@@ -44,5 +45,15 @@ def load_config(path: str = None):
         misc=Miscellaneous()
     )
 
-config = load_config(".env")
+try:
+    config = load_config("config.env")
+except:
+    dot_env_craete()
+    sys.exit("введите все данные в конфиг файл config.env")
+print(config.tg_bot.token)
+print(config.tg_bot.admin_ids)
+print(config.tg_bot.proxy)
+print(config.tg_bot.number_of_changes_rename)
+if config.tg_bot.token == "<bot_token>" or config.tg_bot.admin_ids == "<admins>":
+    sys.exit("введите все данные в конфиг файл config.env")
 config2 = config

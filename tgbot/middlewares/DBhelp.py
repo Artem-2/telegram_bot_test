@@ -1,4 +1,4 @@
-from tgbot.db import BotDB
+from tgbot.misc.db import BotDB
 import os.path
 
 try:

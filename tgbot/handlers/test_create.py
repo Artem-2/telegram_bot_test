@@ -1,6 +1,6 @@
 import codecs
 import os
-from aiogram import Dispatcher, types
+from aiogram import Dispatcher, types, Bot
 from aiogram.fsm.context import FSMContext
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram import Router, F
@@ -10,7 +10,6 @@ from tgbot.handlers.interface_all import interface_all_begin
 from tgbot.handlers.interface_all import interface_all_begin2
 from aiogram.types import ContentType
 
-from bot import bot
 
 import random
 import string
@@ -34,7 +33,7 @@ async def test_create(call: types.CallbackQuery, state: FSMContext):
         await state.clear()
 
 @router.message(F.content_type == ContentType.DOCUMENT, all.test_readQ1)
-async def test_create3(message: types.Message, state: FSMContext):
+async def test_create3(message: types.Message, state: FSMContext, bot:Bot):
     try:
         #получение содержимого файла
         if message.document.mime_type == 'text/plain':

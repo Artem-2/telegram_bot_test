@@ -27,10 +27,6 @@ from tgbot.config import config
 
 logger = logging.getLogger(__name__)
 
-storage = MemoryStorage()
-session = AiohttpSession(proxy=config.tg_bot.proxy)
-bot = Bot(token=config.tg_bot.token, session=session, parse_mode='HTML')
-dp = Dispatcher(storage=storage, fsm_strategy=FSMStrategy.GLOBAL_USER)
 
 
 
@@ -41,6 +37,10 @@ async def main():
     )
     logger.info("Starting bot")
 
+    storage = MemoryStorage()
+    session = AiohttpSession(proxy=config.tg_bot.proxy)
+    bot = Bot(token=config.tg_bot.token, session=session, parse_mode='HTML')
+    dp = Dispatcher(storage=storage, fsm_strategy=FSMStrategy.GLOBAL_USER)
     
     dp.include_routers(get_test_result_admin.router)
     dp.include_routers(get_test_result.router)
