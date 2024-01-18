@@ -52,4 +52,3 @@ except:
     sys.exit("введите все данные в конфиг файл config.env")
 if config.tg_bot.token == "<bot_token>" or config.tg_bot.admin_ids == "<admins>":
     sys.exit("введите все данные в конфиг файл config.env")
-config2 = config
