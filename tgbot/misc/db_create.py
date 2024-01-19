@@ -1,5 +1,5 @@
 
-from tgbot.config import config
+from tgbot.misc.config import config
 
 
 

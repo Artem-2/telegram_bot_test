@@ -1,5 +1,6 @@
 import asyncio
 import logging 
+import sys
 
 from tgbot.handlers import interface_all
 from tgbot.handlers import activete_deactivete
@@ -21,7 +22,7 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.fsm.strategy import FSMStrategy
 from aiogram.client.session.aiohttp import AiohttpSession
 
-from tgbot.config import config
+from tgbot.misc.config import config
 
 
 
@@ -65,7 +66,7 @@ async def main():
         for c in config.tg_bot.admin_ids:
             await bot.send_message(c,'Бот запущен')
     except:
-        print("Неверный id админа \n")
+        sys.exit("Неверный id админа \n")
     # Start
     try:
         await bot.delete_webhook(drop_pending_updates=True)

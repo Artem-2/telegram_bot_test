@@ -12,7 +12,8 @@ from tgbot.misc.states import test_status_v2,all
 from tgbot.handlers.interface_all import interface_all_begin, interface_all_begin2
 import random
 #ошибки 6000
-time_update = 5 #частота обновления таймера
+from tgbot.misc.config import config
+time_update = config.tg_bot.time_update #частота обновления таймера
 
 
 #id = BotDB.answer_question_result(id1,True,msg[i-1][4],msg[i-1][5][int(call_data)])

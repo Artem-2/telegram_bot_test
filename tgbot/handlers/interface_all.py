@@ -11,8 +11,8 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from tgbot.filters.admin import AdminFilter
 #ошибки 5000
 
-from tgbot.config import config
-number_of_changes_rename = int(config.tg_bot.number_of_changes_rename)  #количесто попыток изменения имени
+from tgbot.misc.config import config
+number_of_changes_rename = config.tg_bot.number_of_changes_rename  #количесто попыток изменения имени
 
 
 all2 = all,default_state,test_status.Q1,test_status.Q2,rename_state.Q1,rename_state.Q2,reg_us.Q1
