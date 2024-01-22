@@ -1,4 +1,5 @@
 from aiogram.fsm.context import FSMContext
+from tgbot.misc.deleting_last_messages import deleting_last_messages
 from aiogram import types
 from tgbot.misc.states import all, test_status, rename_state, reg_us
 from aiogram.fsm.state import default_state
@@ -18,6 +19,8 @@ number_of_changes_rename = config.tg_bot.number_of_changes_rename  #количе
 all2 = all,default_state,test_status.Q1,test_status.Q2,rename_state.Q1,rename_state.Q2,reg_us.Q1
 
 router = Router()
+
+
 ####################################################################################################################################################
 @router.message(F.text, Command("admin"), default_state, AdminFilter(is_admin=True))
 @router.message(F.text, Command("admin"), all.interface_all_stateBegin, AdminFilter(is_admin=True))
@@ -45,7 +48,9 @@ async def interface_all_test_create_admin(message: types.Message, state: FSMCont
         keyboard.row(button_h)
         button_h = types.InlineKeyboardButton(text="Отмена", callback_data="start")
         keyboard.row(button_h)
-        await message.answer("Выберите вариант",reply_markup = keyboard.as_markup())
+        await deleting_last_messages(state)
+        last_message = await message.answer("Выберите вариант",reply_markup = keyboard.as_markup())
+        await state.update_data(last_message=last_message)
         await state.set_state(state=all.interface_all_stateQ1)
     except:
         await message.answer("Произошла ошибка 5001")
@@ -53,8 +58,10 @@ async def interface_all_test_create_admin(message: types.Message, state: FSMCont
 ####################################################################################################################################################
 async def interface_all_begin_def(message_id, message: types.Message, state: FSMContext):
     try:
-        await state.clear()
         keyboard =  InlineKeyboardBuilder()
+        await deleting_last_messages(state)
+        await state.clear()
+        last_message = 0
         if BotDB.get_teachers_name(message_id) != None:
             button_h = types.InlineKeyboardButton(text="Пройти тест", callback_data="test")
             keyboard.row(button_h)
@@ -63,7 +70,7 @@ async def interface_all_begin_def(message_id, message: types.Message, state: FSM
             button_h = types.InlineKeyboardButton(text="Добавить преподавателя", callback_data="registration_teachers")
             keyboard.row(button_h)
             await state.set_state(state=all.interface_all_stateBegin)
-            await message.answer("Выберите вариант",reply_markup = keyboard.as_markup())
+            last_message = await message.answer("Выберите вариант",reply_markup = keyboard.as_markup())
         else:
             if BotDB.user_exists(message_id) != None:
                 button_h = types.InlineKeyboardButton(text="Начать тест", callback_data="passing_the_test_v2")
@@ -72,12 +79,13 @@ async def interface_all_begin_def(message_id, message: types.Message, state: FSM
                 if num[0] < number_of_changes_rename:
                     button_h = types.InlineKeyboardButton(text="Изменить имя", callback_data="rename")
                     keyboard.row(button_h)
-                await message.answer("Выберите вариант",reply_markup = keyboard.as_markup())
+                last_message = await message.answer("Выберите вариант",reply_markup = keyboard.as_markup())
             else:
                 button_h = types.InlineKeyboardButton(text="Регистрация", callback_data="registration")
                 keyboard.row(button_h) 
-                await message.answer("Необходимо пройти регистрацию",reply_markup = keyboard.as_markup())
+                last_message = await message.answer("Необходимо пройти регистрацию",reply_markup = keyboard.as_markup())
             await state.set_state(state=all.interface_all_stateQ1)
+        await state.update_data(last_message=last_message)
     except:
         await message.answer("Произошла ошибка 5002")
         await state.clear()
@@ -145,7 +153,9 @@ async def interface_all_passing_the_test(call: types.CallbackQuery, state: FSMCo
             keyboard.row(button_h)
         button_h = types.InlineKeyboardButton(text="Назад", callback_data="start")
         keyboard.row(button_h)
-        await call.message.answer("Выберите вариант",reply_markup = keyboard.as_markup())
+        await deleting_last_messages(state)
+        last_message = await call.message.answer("Выберите вариант",reply_markup = keyboard.as_markup())
+        await state.update_data(last_message=last_message)
         await state.set_state(state=all.interface_all_stateQ1)
     except:
         await call.message.answer("Произошла ошибка 5003")
@@ -175,7 +185,9 @@ async def interface_all_test_create(call: types.CallbackQuery, state: FSMContext
         keyboard.row(button_h)
         button_h = types.InlineKeyboardButton(text="Назад", callback_data="start")
         keyboard.row(button_h)
-        await call.message.answer("Выберите вариант",reply_markup = keyboard.as_markup())
+        await deleting_last_messages(state)
+        last_message = await call.message.answer("Выберите вариант",reply_markup = keyboard.as_markup())
+        await state.update_data(last_message=last_message)
         await state.set_state(state=all.interface_all_stateQ1)
     except:
         await call.message.answer("Произошла ошибка 5004")

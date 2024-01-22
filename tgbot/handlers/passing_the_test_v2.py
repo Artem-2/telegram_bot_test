@@ -16,11 +16,6 @@ from tgbot.misc.config import config
 time_update = config.tg_bot.time_update #частота обновления таймера
 
 
-#id = BotDB.answer_question_result(id1,True,msg[i-1][4],msg[i-1][5][int(call_data)])
-#BotDB.answer_question_result_update(msg[i-1][8], id1,True,msg[i-1][4],msg[i-1][5][int(call_data)])
-#id = BotDB.answer_question_result_multiple_answers(id1,False,msg[i-1][4],text)
-#BotDB.answer_question_result_multiple_answers_update(msg[i-1][8], id1,False,msg[i-1][4],text)
-
 
 
 router = Router()

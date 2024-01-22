@@ -11,7 +11,7 @@ from tgbot.handlers import passing_the_test_v2
 from tgbot.handlers.test_management import test_create
 from tgbot.handlers.pictures_management import pictures_del
 from tgbot.handlers.registration import registration
-from tgbot.handlers.registration.registration import registration_teachers
+from tgbot.handlers.registration import registration_teachers
 from tgbot.handlers.pictures_management import pictures_add
 from tgbot.handlers.registration import rename
 from tgbot.handlers.test_management import test_del

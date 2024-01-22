@@ -9,6 +9,7 @@ from tgbot.misc.states import all
 from tgbot.handlers.interface_all import interface_all_begin
 from tgbot.handlers.interface_all import interface_all_begin2
 from aiogram.types import ContentType
+from tgbot.misc.deleting_last_messages import deleting_last_messages
 
 
 import random

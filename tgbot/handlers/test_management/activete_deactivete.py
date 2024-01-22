@@ -1,4 +1,5 @@
 from aiogram import types
+from tgbot.misc.deleting_last_messages import deleting_last_messages
 from aiogram.fsm.context import FSMContext
 from aiogram import Router, F
 
@@ -10,6 +11,8 @@ from tgbot.handlers.interface_all import interface_all_begin2
     
 
 router = Router()
+
+
 
 @router.callback_query(F.data == "activete", all.interface_all_stateQ1)
 async def activete(call: types.CallbackQuery, state: FSMContext):
@@ -23,7 +26,9 @@ async def activete(call: types.CallbackQuery, state: FSMContext):
             keyboard.row(button_h)
         button_h = types.InlineKeyboardButton(text="Отмена", callback_data = "start")
         keyboard.row(button_h)
-        await call.message.answer(all1, reply_markup = keyboard.as_markup())
+        await deleting_last_messages(state)
+        last_message = await call.message.answer(all1, reply_markup = keyboard.as_markup())
+        await state.update_data(last_message=last_message)
         await state.set_state(state=all.test_activateQ1)
     except:
         await call.message.answer("Произошла ошибка 1001")
@@ -40,6 +45,7 @@ async def activete2(call: types.CallbackQuery, state: FSMContext):
                 flag = 1
         if flag == 1:
             BotDB.test_update_active_mode(call.data, True)
+            await deleting_last_messages(state)
             await call.message.answer("Тест с кодом " + str(call.data) + " активирован")
             await state.clear()
             await interface_all_begin2(call, state)
@@ -63,7 +69,9 @@ async def deactivete(call: types.CallbackQuery, state: FSMContext):
             keyboard.row(button_h)
         button_h = types.InlineKeyboardButton(text="Отмена", callback_data = "start")
         keyboard.row(button_h)
-        await call.message.answer(all1, reply_markup = keyboard.as_markup())
+        await deleting_last_messages(state)
+        last_message = await call.message.answer(all1, reply_markup = keyboard.as_markup())
+        await state.update_data(last_message=last_message)
         await state.set_state(state=all.test_activateQ2)
     except:
         await call.message.answer("Произошла ошибка 1003")
@@ -80,6 +88,7 @@ async def deactivete2(call: types.CallbackQuery, state: FSMContext):
                 flag = 1
         if flag == 1:
             BotDB.test_update_active_mode(call.data, False)
+            await deleting_last_messages(state)
             await call.message.answer("Тест с кодом " + str(call.data) + " отключен")
             await state.clear()
             await interface_all_begin2(call, state)
