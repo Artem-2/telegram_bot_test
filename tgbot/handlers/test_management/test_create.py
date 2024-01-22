@@ -52,7 +52,7 @@ async def test_create3(message: types.Message, state: FSMContext, bot:Bot):
 
             #обработка содержимого файла
 
-            title = None
+            title = "None"
             time = 60
             mode = 0
             attempt = 1
@@ -135,7 +135,7 @@ async def test_create3(message: types.Message, state: FSMContext, bot:Bot):
                             mark_5 = 0
                             await message.answer("После \\5 установлено не верное значение\nпо умолчанию 0")
 
-                    elif t.startswith("\\q") and title == None and (mode == 0 or mode == 1) and cost == 0 and (0 <= mark_3 >= 5 and 0 <= mark_4 >= 5 and 0 <= mark_5 >= 5 ):
+                    elif t.startswith("\\q"):
                         test_id = int(BotDB.test_add(message.from_user.id, title, rand_string, time, mode, attempt, cost, mark_3, mark_4, mark_5))
                         flag = 1
 
