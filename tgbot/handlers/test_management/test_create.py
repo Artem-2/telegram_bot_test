@@ -49,7 +49,6 @@ async def test_create3(message: types.Message, state: FSMContext, bot:Bot):
                 rand_string = ''.join(random.choice(letters) for i in range(length))
                 result = BotDB.get_test(rand_string)
         
-            await message.answer("Код теста : " + rand_string)
 
             #обработка содержимого файла
 
@@ -136,7 +135,7 @@ async def test_create3(message: types.Message, state: FSMContext, bot:Bot):
                             mark_5 = 0
                             await message.answer("После \\5 установлено не верное значение\nпо умолчанию 0")
 
-                    elif t.startswith("\\q"):
+                    elif t.startswith("\\q") and title == None and (mode == 0 or mode == 1) and cost == 0 and (0 <= mark_3 >= 5 and 0 <= mark_4 >= 5 and 0 <= mark_5 >= 5 ):
                         test_id = int(BotDB.test_add(message.from_user.id, title, rand_string, time, mode, attempt, cost, mark_3, mark_4, mark_5))
                         flag = 1
 
@@ -170,6 +169,10 @@ async def test_create3(message: types.Message, state: FSMContext, bot:Bot):
                         t1 = t1.replace("\\+","")
                         BotDB.answer_test_add(test_question_id, t1.replace('\r', ''), 1)
 
+            if flag == 0:
+                await message.answer("некоректный файл теста")
+            else:
+                await message.answer("Код теста : " + rand_string)
             await state.clear()
             file = os.path.join(".", "Test_files", message.document.file_name)
             os.remove(file)
