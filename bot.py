@@ -3,18 +3,18 @@ import logging
 import sys
 
 from tgbot.handlers import interface_all
-from tgbot.handlers import activete_deactivete
-from tgbot.handlers import get_test_result_admin
-from tgbot.handlers import get_test_result_one_day
-from tgbot.handlers import get_test_result
+from tgbot.handlers.test_management import activete_deactivete
+from tgbot.handlers.output_of_results import get_test_result_admin
+from tgbot.handlers.output_of_results import get_test_result_one_day
+from tgbot.handlers.output_of_results import get_test_result
 from tgbot.handlers import passing_the_test_v2
-from tgbot.handlers import test_create
-from tgbot.handlers import pictures_del
-from tgbot.handlers import registration
-from tgbot.handlers import registration_teachers
-from tgbot.handlers import pictures
-from tgbot.handlers import rename
-from tgbot.handlers import test_del
+from tgbot.handlers.test_management import test_create
+from tgbot.handlers.pictures_management import pictures_del
+from tgbot.handlers.registration import registration
+from tgbot.handlers.registration.registration import registration_teachers
+from tgbot.handlers.pictures_management import pictures_add
+from tgbot.handlers.registration import rename
+from tgbot.handlers.test_management import test_del
 
 
 from aiogram import Bot, Dispatcher
@@ -58,7 +58,7 @@ async def main():
     dp.include_routers(test_del.router)
     dp.include_routers(activete_deactivete.router)
     dp.include_routers(get_test_result_one_day.router)
-    dp.include_routers(pictures.router)
+    dp.include_routers(pictures_add.router)
     dp.include_routers(rename.router)
 
 

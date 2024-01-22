@@ -2,7 +2,7 @@ from aiogram import types
 from aiogram.fsm.context import FSMContext
 from aiogram import Router, F
 from tgbot.middlewares.DBhelp import BotDB
-from tgbot.handlers.get_test_result import get_test_result2
+from tgbot.handlers.output_of_results.get_test_result import get_test_result2
 from tgbot.misc.states import all
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 #ошибки 3000
