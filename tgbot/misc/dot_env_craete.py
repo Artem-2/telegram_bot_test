@@ -1,10 +1,3 @@
-
-
-
-
-
-
-
 def dot_env_craete():
     my_file = open("config.env", "w+", encoding="utf-8")
     my_file.write("""#токен можно получить в BotFather

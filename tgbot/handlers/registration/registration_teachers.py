@@ -6,6 +6,7 @@ from aiogram.filters import Command
 from tgbot.middlewares.DBhelp import BotDB
 from tgbot.misc.states import all, test_status, registration_teachers_status, rename_state, reg_us
 from tgbot.handlers.interface_all import interface_all_begin2, interface_all_begin
+from tgbot.misc.deleting_last_messages import deleting_last_messages
 import datetime
 import random
 import string
@@ -26,6 +27,7 @@ async def registration_teachers(call: types.CallbackQuery, state: FSMContext):
             result = BotDB.get_teachers_password(password)
         time = datetime.datetime.now()
         BotDB.teachers_password_add(password, time, call.from_user.id)
+        await deleting_last_messages(state)
         await call.message.answer("Пароль: " + password + "\nДействителен 1 день с этого момента")
         await call.message.answer("Для регистрации необходимо ввести /registration")
         await interface_all_begin2(call, state)
@@ -57,12 +59,14 @@ async def registration_teachers(call: types.CallbackQuery, state: FSMContext):
 async def registration_teachers2(message: types.Message, state: FSMContext):
     try:
         a = BotDB.get_teachers_name(message.from_user.id)
+        await deleting_last_messages(state)
         if (a != None):
-            await message.answer("Вы уже зарегествированны")
+            last_message = await message.answer("Вы уже зарегествированны")
             await state.clear()    
         else:
-            await message.answer("Введите пароль")
+            last_message = await message.answer("Введите пароль")
             await state.set_state(state= registration_teachers_status.Q1)
+        await state.update_data(last_message=last_message)
     except:
         await message.answer("Произошла ошибка 9102")
         await state.clear()
@@ -72,6 +76,7 @@ async def registration_teachers3(message: types.Message, state: FSMContext):
     try:
         a = BotDB.get_teachers_password(message.text)
         if(a == None):
+            await deleting_last_messages(state)
             await message.answer("Неверный пароль")
             await state.clear()
         else:
@@ -80,10 +85,13 @@ async def registration_teachers3(message: types.Message, state: FSMContext):
             data_3 = datetime.datetime.strptime(data[0], '%Y-%m-%d %H:%M:%S.%f')
             data_4 = data_2 - data_3
             if int(data_4.days) == 0:
-                await message.answer("Пароль верный\nДля регистрации введите ФИО")
+                await deleting_last_messages(state)
+                last_message = await message.answer("Пароль верный\nДля регистрации введите ФИО")
+                await state.update_data(last_message=last_message)
                 await state.update_data(id=a[0])
                 await state.set_state(state= registration_teachers_status.Q2)
             else:
+                await deleting_last_messages(state)
                 await message.answer("Неверный пароль")
                 user_id = BotDB.get_teachers_user_id(a[0])
                 BotDB.teachers_password_add(0, 0, user_id[0])
@@ -100,7 +108,9 @@ async def registration_teachers4(message: types.Message, state: FSMContext):
         id = data['id'] 
         BotDB.teachers_add(message.text, message.from_user.id, id)
         await state.clear()
-        await message.answer("Регистрация завершена")
+        await deleting_last_messages(state)
+        last_message = await message.answer("Регистрация завершена")
+        await state.update_data(last_message=last_message)
         interface_all_begin(message, state)
     except:
         await message.answer("Произошла ошибка 9104")

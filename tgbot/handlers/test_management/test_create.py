@@ -24,10 +24,12 @@ router = Router()
 @router.callback_query(F.data == "test_create", all.interface_all_stateQ1)
 async def test_create(call: types.CallbackQuery, state: FSMContext):
     try:
+        await deleting_last_messages(state)
         keyboard =  InlineKeyboardBuilder()
         button_h = types.InlineKeyboardButton(text="Отмена", callback_data="start")
         keyboard.row(button_h)
-        await call.message.answer("Отправьте файл формата .txt с тесто\nКодировка файла UTF-8",reply_markup = keyboard.as_markup())
+        last_message = await call.message.answer("Отправьте файл формата .txt с тесто\nКодировка файла UTF-8",reply_markup = keyboard.as_markup())
+        await state.update_data(last_message=last_message)
         await state.set_state(state=all.test_readQ1)
     except:
         await call.message.answer("Произошла ошибка 9301")
@@ -172,6 +174,7 @@ async def test_create3(message: types.Message, state: FSMContext, bot:Bot):
             if flag == 0:
                 await message.answer("некоректный файл теста")
             else:
+                await deleting_last_messages(state)
                 await message.answer("Код теста : " + rand_string)
             await state.clear()
             file = os.path.join(".", "Test_files", message.document.file_name)
@@ -185,8 +188,10 @@ async def test_create3(message: types.Message, state: FSMContext, bot:Bot):
 @router.callback_query(F.data == "test_create_help", all.interface_all_stateQ1)
 async def test_create_help(call: types.CallbackQuery, state: FSMContext):
     try:
-        await call.message.answer("В разработке")
+        await deleting_last_messages(state)
         await interface_all_begin2(call,state)
+        last_message = await call.message.answer("В разработке")
+        await state.update_data(last_message=last_message)
     except:
         await call.message.answer("Произошла ошибка 9303")
         await state.clear()

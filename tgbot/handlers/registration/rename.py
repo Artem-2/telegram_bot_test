@@ -5,6 +5,7 @@ from aiogram import Router, F
 from tgbot.middlewares.DBhelp import BotDB
 from tgbot.misc.states import all, rename_state
 from tgbot.handlers.interface_all import interface_all_begin
+from tgbot.misc.deleting_last_messages import deleting_last_messages
 #ошибки 9200
 
 router = Router()
@@ -19,7 +20,9 @@ async def rename(call: types.CallbackQuery, state: FSMContext):
         keyboard.row(button_h)
         button_h = types.InlineKeyboardButton(text="Отмена", callback_data="start")
         keyboard.row(button_h)
-        await call.message.answer("Выберите вариант",reply_markup = keyboard.as_markup())
+        await deleting_last_messages(state)
+        last_message = await call.message.answer("Выберите вариант",reply_markup = keyboard.as_markup())
+        await state.update_data(last_message=last_message)
         await state.set_state(state= rename_state.Q1)
     except:
         await call.message.answer("Произошла ошибка 9201")
@@ -32,7 +35,9 @@ async def rename1(call: types.CallbackQuery, state: FSMContext):
             keyboard =  InlineKeyboardBuilder()
             button_h = types.InlineKeyboardButton(text="Отмена", callback_data="start")
             keyboard.row(button_h)
-            await call.message.answer("Введите фамилию", reply_markup = keyboard.as_markup())
+            await deleting_last_messages(state)
+            last_message = await call.message.answer("Введите фамилию", reply_markup = keyboard.as_markup())
+            await state.update_data(last_message=last_message)
             await state.set_state(state= rename_state.Q2)
         else:
             pass
@@ -46,7 +51,9 @@ async def rename2(message: types.Message, state: FSMContext):
     try:
         surname = message.text
         await state.update_data(surname=surname)
-        await message.answer("Введите имя")
+        await deleting_last_messages(state)
+        last_message = await message.answer("Введите имя")
+        await state.update_data(last_message=last_message)
         await state.set_state(state= rename_state.Q3)
     except:
         await message.answer("Произошла ошибка 9203")
@@ -60,7 +67,10 @@ async def rename3(message: types.Message, state: FSMContext):
 
         await state.update_data(name=name)
         
-        await message.answer("Введите группу (пример: 19-В-1)")
+        await deleting_last_messages(state)
+        last_message = await message.answer("Введите группу (пример: 19-В-1)")
+        await state.update_data(last_message=last_message)
+        
         await state.set_state(state= rename_state.Q4)
     except:
         await message.answer("Произошла ошибка 9204")
@@ -81,6 +91,7 @@ async def rename4(message: types.Message, state: FSMContext):
 
         i = BotDB.get_test_user_rename_number_of_changes(message.from_user.id)
         i1 = i[0] + 1
+        await deleting_last_messages(state)
         BotDB.test_user_rename(str(data["surname"]) + " " + str(data["name"]), data["group"], i1, message.from_user.id)
         await message.answer("Изменение регестрации завершено")
         await message.answer(str(data["surname"]) + " " + str(data["name"]))
