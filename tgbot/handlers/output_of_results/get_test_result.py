@@ -1,6 +1,7 @@
 import asyncio
 import xlwt
 import os
+from aiogram import Bot
 from aiogram import types
 from aiogram.fsm.context import FSMContext
 from aiogram.types.input_file import FSInputFile
@@ -36,7 +37,7 @@ async def get_test_result(call: types.CallbackQuery, state: FSMContext):
         await state.clear()
 
 @router.callback_query(all.get_testQ1)
-async def get_test_result2(call: types.CallbackQuery, state: FSMContext, admin: bool=False):
+async def get_test_result2(call: types.CallbackQuery, state: FSMContext, bot: Bot, admin: bool=False):
     try:
         flag = -1
         if admin == False:
@@ -93,10 +94,11 @@ async def get_test_result2(call: types.CallbackQuery, state: FSMContext, admin: 
                                         result = ""
                                         text = text_pesponse
                                         text = text.replace("multiple_answers:,","")
-                                        text = text.split(",")
-                                        for t in text:
-                                            answer_in = BotDB.get_answer_test_answer(int(t))
-                                            result = result + answer_in[0] + ","
+                                        if text != '':
+                                            text = text.split(",")
+                                            for t in text:
+                                                answer_in = BotDB.get_answer_test_answer(int(t))
+                                                result = result + answer_in[0] + ","
                                         sheet1.write(i, j, result)
                                     elif text_pesponse.startswith("multiple_answers:"):
                                         sheet1.write(i, j, "Ответов нет")
@@ -111,7 +113,6 @@ async def get_test_result2(call: types.CallbackQuery, state: FSMContext, admin: 
             book.save(excel_book)
             await asyncio.sleep(3)
             document = FSInputFile(excel_book)
-            from bot import bot
             await deleting_last_messages(state)
             await bot.send_document(call.message.chat.id, document)
             await asyncio.sleep(3)
