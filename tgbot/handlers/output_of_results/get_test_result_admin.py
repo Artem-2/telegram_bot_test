@@ -5,6 +5,7 @@ from tgbot.middlewares.DBhelp import BotDB
 from tgbot.handlers.output_of_results.get_test_result import get_test_result2
 from tgbot.misc.states import all
 from aiogram.utils.keyboard import InlineKeyboardBuilder
+from tgbot.misc.deleting_last_messages import deleting_last_messages
 #ошибки 3000
 
 router = Router()
@@ -23,7 +24,9 @@ async def get_test_result_admin(call: types.CallbackQuery, state: FSMContext):
             keyboard.row(button_h)
         button_h = types.InlineKeyboardButton(text="Отмена", callback_data = "start")
         keyboard.row(button_h)
-        await call.message.answer(all1, reply_markup = keyboard.as_markup())
+        await deleting_last_messages(state)
+        last_message = await call.message.answer(all1, reply_markup = keyboard.as_markup())
+        await state.update_data(last_message=last_message)
         await state.set_state(state=all.get_test_adminQ1)
     except:
         await call.message.answer("Произошла ошибка 3001")
@@ -39,6 +42,7 @@ async def get_test_result_admin2(call: types.CallbackQuery, state: FSMContext):
             if a[1] == str(call.data):
                 flag = 1
         if flag == 1:
+            await deleting_last_messages(state)
             await get_test_result2(call, state, admin = True)
         else:
             pass

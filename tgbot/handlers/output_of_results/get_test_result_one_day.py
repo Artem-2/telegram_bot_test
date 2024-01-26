@@ -6,6 +6,7 @@ import datetime
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from tgbot.middlewares.DBhelp import BotDB
 from tgbot.misc.states import all
+from tgbot.misc.deleting_last_messages import deleting_last_messages
 #ошибки 4000
     
     
@@ -24,7 +25,9 @@ async def get_test_result_one_day(call: types.CallbackQuery, state: FSMContext):
             keyboard.row(button_h)
         button_h = types.InlineKeyboardButton(text = "Отмена", callback_data = "start")
         keyboard.row(button_h)
-        await call.message.answer(all1, reply_markup = keyboard.as_markup())
+        await deleting_last_messages(state)
+        last_message = await call.message.answer(all1, reply_markup = keyboard.as_markup())
+        await state.update_data(last_message=last_message)
         await state.set_state(state=all.register_get_test_result_one_dayQ1)
     except:
         await call.message.answer("Произошла ошибка 4001")
@@ -44,6 +47,7 @@ async def get_test_result_one_day2(call: types.CallbackQuery, state: FSMContext)
             res = BotDB.get_test_result_all(test_id[0][0])
             data_2 = datetime.datetime.now()
             message_id_list = []
+            message_id_list_deleting_last_messages = []
             for r in res:
                 data = datetime.datetime.strptime(r[3], '%Y-%m-%d %H:%M:%S')
                 data_3 = data_2 - data
@@ -62,12 +66,15 @@ async def get_test_result_one_day2(call: types.CallbackQuery, state: FSMContext)
                     button_h = types.InlineKeyboardButton(text="Удалить", callback_data=str(r[4]))
                     keyboard.row(button_h)
                     message_id = await call.message.answer(text, reply_markup = keyboard.as_markup())
+                    message_id_list_deleting_last_messages.append(message_id)
                     message_id_list.append([str(r[4]),message_id])
             await state.update_data(message_id=message_id_list)
             keyboard =  InlineKeyboardBuilder()
             button_h = types.InlineKeyboardButton(text="Назад", callback_data="start")
             keyboard.row(button_h)
-            await call.message.answer("Выберите вариант", reply_markup = keyboard.as_markup())
+            await deleting_last_messages(state)
+            last_message = await call.message.answer("Выберите вариант", reply_markup = keyboard.as_markup())
+            await state.update_data(last_message=message_id_list_deleting_last_messages.append(last_message))
             await state.set_state(state=all.register_get_test_result_one_dayQ2)
         else:
             pass

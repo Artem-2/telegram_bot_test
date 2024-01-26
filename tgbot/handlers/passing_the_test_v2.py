@@ -10,6 +10,7 @@ from aiogram import Router, F
 from tgbot.middlewares.DBhelp import BotDB
 from tgbot.misc.states import test_status_v2,all
 from tgbot.handlers.interface_all import interface_all_begin, interface_all_begin2
+from tgbot.misc.deleting_last_messages import deleting_last_messages
 import random
 #ошибки 6000
 from tgbot.misc.config import config
@@ -185,6 +186,7 @@ async def code_request(call: types.CallbackQuery, state: FSMContext):
     keyboard =  InlineKeyboardBuilder()
     button_h = types.InlineKeyboardButton(text="Отмена", callback_data = "start")
     keyboard.row(button_h)
+    await deleting_last_messages(state)
     await call.message.answer("Введите код теста", reply_markup = keyboard.as_markup())
     await state.set_state(state=test_status_v2.Q1)
     

@@ -5,6 +5,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram import Router, F
 from tgbot.middlewares.DBhelp import BotDB
 from tgbot.misc.states import all
+from tgbot.misc.deleting_last_messages import deleting_last_messages
 from tgbot.handlers.interface_all import interface_all_begin
 import random
 import string
@@ -21,7 +22,9 @@ async def pictures(call: types.CallbackQuery, state: FSMContext):
         keyboard =  InlineKeyboardBuilder()
         button_h = types.InlineKeyboardButton(text="Отмена", callback_data="start")
         keyboard.row(button_h)
-        await call.message.answer("Отправьте фотографию которую необходимо добавить в тест",reply_markup = keyboard.as_markup())
+        await deleting_last_messages(state)
+        last_message = await call.message.answer("Отправьте фотографию которую необходимо добавить в тест",reply_markup = keyboard.as_markup())
+        await state.update_data(last_message=last_message)
         await state.set_state(state=all.test_picturesQ1)
     except:
         await call.message.answer("Произошла ошибка 7001")
@@ -37,6 +40,7 @@ async def pictures3(message: types.Message, state: FSMContext):
             rand_string = ''.join(random.choice(letters) for i in range(length))
             result = BotDB.get_pictures_id(rand_string)
         
+        await deleting_last_messages(state)
         await message.answer("Код картинки : " + rand_string)
 
         photo_adres = os.path.join(".","pictures",rand_string+".png")

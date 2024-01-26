@@ -9,6 +9,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from tgbot.middlewares.DBhelp import BotDB
 from tgbot.misc.states import all
 from tgbot.handlers.interface_all import interface_all_begin2
+from tgbot.misc.deleting_last_messages import deleting_last_messages
 #ошибки 2000
 
 
@@ -26,7 +27,9 @@ async def get_test_result(call: types.CallbackQuery, state: FSMContext):
             keyboard.row(button_h)
         button_h = types.InlineKeyboardButton(text = "Отмена", callback_data = "start")
         keyboard.row(button_h)
-        await call.message.answer(all1, reply_markup = keyboard.as_markup())
+        await deleting_last_messages(state)
+        last_message = await call.message.answer(all1, reply_markup = keyboard.as_markup())
+        await state.update_data(last_message=last_message)
         await state.set_state(state=all.get_testQ1)
     except:
         await call.message.answer("Произошла ошибка 2001")
@@ -109,6 +112,7 @@ async def get_test_result2(call: types.CallbackQuery, state: FSMContext, admin: 
             await asyncio.sleep(3)
             document = FSInputFile(excel_book)
             from bot import bot
+            await deleting_last_messages(state)
             await bot.send_document(call.message.chat.id, document)
             await asyncio.sleep(3)
             os.remove(excel_book)

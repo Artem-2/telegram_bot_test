@@ -6,6 +6,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from tgbot.middlewares.DBhelp import BotDB
 from tgbot.misc.states import all
 from aiogram import Router, F
+from tgbot.misc.deleting_last_messages import deleting_last_messages
 #ошибки 8000
 
 
@@ -24,7 +25,9 @@ async def pictures_del(call: types.CallbackQuery, state: FSMContext):
             keyboard.row(button_h)
         button_h = types.InlineKeyboardButton(text = "Отмена", callback_data = "start")
         keyboard.row(button_h)
-        await call.message.answer(all1, reply_markup = keyboard.as_markup())
+        await deleting_last_messages(state)
+        last_message = await call.message.answer(all1, reply_markup = keyboard.as_markup())
+        await state.update_data(last_message=last_message)
         await state.set_state(state=all.test_pictures_delQ1)
     except:
         await call.message.answer("Произошла ошибка 8001")
@@ -42,6 +45,7 @@ async def pictures_del2(call: types.CallbackQuery, state: FSMContext):
             photo_adres = os.path.join(".","pictures",call.data+".png")
             os.remove(photo_adres)
             BotDB.pictures_del(call.data)
+            await deleting_last_messages(state)
             await call.message.answer("Картинка с кодом " + call.data + " удалена")
             await state.clear()
             await pictures_del(call,state)
