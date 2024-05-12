@@ -91,5 +91,6 @@ def db_create(conn):
             right_answer BOOLEAN NOT NULL
         );""")
     for c in config.tg_bot.admin_ids:
+        print(1111111111111111111111111111111111111111111111111111111111111111111111111111111111, c)
         conn.cursor.execute("INSERT INTO 'teachers' ('name','user_id') VALUES (?, ?)",("Admin", c))
-    conn.commit()
+    conn.conn.commit()

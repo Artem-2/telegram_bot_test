@@ -33,7 +33,7 @@ class BotDB:
             if result.fetchone()==None :
                 flag = 1
         if flag == 1:
-            db_create(self.conn)
+            db_create(self)
 #######################################################################
     def user_exists(self, user_id):
         semaphore_begin()
