@@ -26,7 +26,6 @@ from aiogram.client.session.aiohttp import AiohttpSession
 from tgbot.misc.config import config
 
 
-
 logger = logging.getLogger(__name__)
 
 
